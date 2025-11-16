@@ -1,7 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/index.css';
 
 const Careers = () => {
+  const navigate = useNavigate();
+
   const jobListings = [
     {
       id: 1,
@@ -47,8 +50,10 @@ const Careers = () => {
     'Our culture is inclusive and barrier-free, so please advise us if you have any restrictions that require accommodation (all your information will be kept confidential).'
   ];
 
-  const handleApplyNow = () => {
-    window.open('https://www.ghanapost.com.gh/jobs', '_blank');
+  const handleApplyNow = (jobTitle) => {
+    // Store job title in sessionStorage to pre-fill the contact form
+    sessionStorage.setItem('jobApplication', jobTitle);
+    navigate('/contact');
   };
 
   return (
@@ -74,7 +79,7 @@ const Careers = () => {
                   <p><strong>📍 Location:</strong> {job.location}</p>
                   <p><strong>💼 Type:</strong> {job.type}</p>
                 </div>
-                <button className="btn btn-apply-job" onClick={handleApplyNow}>Apply Now</button>
+                <button className="btn btn-apply-job" onClick={() => handleApplyNow(job.title)}>Apply Now</button>
               </div>
             ))}
           </div>
@@ -124,7 +129,7 @@ const Careers = () => {
         <section className="cta-section">
           <h2>Come work with us</h2>
           <p>Grow your career and take pride in helping deliver a stronger Ghana. We'd love to have you join us.</p>
-          <button className="btn btn-cta" onClick={handleApplyNow}>Apply now</button>
+          <button className="btn btn-cta" onClick={() => handleApplyNow('General Application')}>Apply now</button>
         </section>
       </div>
     </div>

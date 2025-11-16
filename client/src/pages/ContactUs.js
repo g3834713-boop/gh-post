@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/index.css';
 
 const ContactUs = () => {
@@ -12,14 +12,31 @@ const ContactUs = () => {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [isJobApplication, setIsJobApplication] = useState(false);
 
   const departments = [
     { value: 'general', label: 'General Inquiry' },
     { value: 'support', label: 'Customer Support' },
     { value: 'complaints', label: 'Complaints' },
     { value: 'feedback', label: 'Feedback' },
-    { value: 'business', label: 'Business Partnership' }
+    { value: 'business', label: 'Business Partnership' },
+    { value: 'careers', label: 'Job Application' }
   ];
+
+  // Check if this is a job application on mount
+  useEffect(() => {
+    const jobApplication = sessionStorage.getItem('jobApplication');
+    if (jobApplication) {
+      setFormData(prev => ({
+        ...prev,
+        subject: `Job Application: ${jobApplication}`,
+        department: 'careers'
+      }));
+      setIsJobApplication(true);
+      // Clear the sessionStorage item
+      sessionStorage.removeItem('jobApplication');
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -109,11 +126,17 @@ const ContactUs = () => {
         </div>
 
         <div className="contact-form-container">
-          <h2>Send us a Message</h2>
+          <h2>{isJobApplication ? 'Job Application Form' : 'Send us a Message'}</h2>
           
           {submitted && (
             <div className="success-message">
-              ✓ Thank you for your message! We'll get back to you soon.
+              ✓ Thank you for your {isJobApplication ? 'application!' : 'message!'} We'll get back to you soon.
+            </div>
+          )}
+
+          {isJobApplication && (
+            <div className="job-application-notice">
+              You're applying for a position at Ghana Post. Please fill out the form below with your details.
             </div>
           )}
 

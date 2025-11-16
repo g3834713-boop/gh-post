@@ -1265,6 +1265,16 @@ table tbody tr:hover {
   font-weight: 600;
 }
 
+.job-application-notice {
+  background-color: #e3f2fd;
+  border-left: 4px solid var(--ghana-blue);
+  color: var(--ghana-blue);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
 .contact-form {
   display: flex;
   flex-direction: column;
