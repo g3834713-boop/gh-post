@@ -47,6 +47,19 @@ db.run(`CREATE TABLE IF NOT EXISTS submissions (
     userAgent TEXT
 )`);
 
+// Create contacts table
+db.run(`CREATE TABLE IF NOT EXISTS contacts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    name TEXT,
+    email TEXT,
+    phone TEXT,
+    subject TEXT,
+    message TEXT,
+    department TEXT,
+    status TEXT DEFAULT 'new'
+)`);
+
 // Middleware to verify JWT
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -89,6 +102,31 @@ app.post('/api/submissions', (req, res) => {
         res.json({
             "message": "success",
             "data": { id: this.lastID, ...req.body },
+        });
+    });
+});
+
+// POST /api/contact - Save contact form submission
+app.post('/api/contact', (req, res) => {
+    const { name, email, phone, subject, message, department } = req.body;
+
+    if (!name || !email || !subject || !message) {
+        return res.status(400).json({ "error": "Missing required fields" });
+    }
+
+    const sql = `INSERT INTO contacts (name, email, phone, subject, message, department)
+                 VALUES (?, ?, ?, ?, ?, ?)`;
+
+    const params = [name, email, phone || null, subject, message, department || 'general'];
+
+    db.run(sql, params, function(err) {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({
+            "message": "Contact message received successfully",
+            "data": { id: this.lastID, ...req.body }
         });
     });
 });
@@ -167,6 +205,34 @@ app.post('/api/admin/login', (req, res) => {
     } else {
         res.status(401).json({ "error": "Invalid credentials" });
     }
+});
+
+// GET /api/contacts - Get all contact messages (admin only)
+app.get('/api/contacts', authenticateToken, (req, res) => {
+    const sql = "SELECT * FROM contacts ORDER BY timestamp DESC";
+    db.all(sql, [], (err, rows) => {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({
+            "message": "success",
+            "data": rows
+        });
+    });
+});
+
+// PATCH /api/contacts/:id/status - Mark contact as read (admin only)
+app.patch('/api/contacts/:id/status', authenticateToken, (req, res) => {
+    const { status } = req.body;
+    const sql = "UPDATE contacts SET status = ? WHERE id = ?";
+    db.run(sql, [status || 'read', req.params.id], function(err) {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({ "message": "status updated", "changes": this.changes });
+    });
 });
 
 // GET /api/submissions/search - Search submissions (admin only)

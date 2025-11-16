@@ -15,6 +15,8 @@ function Navbar({ adminToken, onLogout }) {
         <span className="navbar-brand-text">Ghana Post</span>
       </Link>
       <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <Link to="/about" style={{ color: 'white', textDecoration: 'none' }}>About</Link>
+        <Link to="/contact" style={{ color: 'white', textDecoration: 'none' }}>Contact</Link>
         {adminToken ? (
           <>
             <Link to="/admin" style={{ color: 'white', textDecoration: 'none', fontWeight: '600' }}>

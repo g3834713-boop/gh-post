@@ -8,6 +8,7 @@ import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AboutUs from './pages/AboutUs';
 import TermsAndConditions from './pages/TermsAndConditions';
+import ContactUs from './pages/ContactUs';
 import Navbar from './components/Navbar';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -49,6 +50,7 @@ function App() {
           <Route path="/payment" element={<PaymentForm formData={formData} setFormData={setFormData} />} />
           <Route path="/success" element={<SuccessPage />} />
           <Route path="/about" element={<AboutUs />} />
+          <Route path="/contact" element={<ContactUs />} />
           <Route path="/termsandconditions" element={<TermsAndConditions />} />
 
           {/* Admin Routes */}
