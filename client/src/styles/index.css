@@ -153,6 +153,119 @@ body {
   line-height: 1.6;
 }
 
+/* Tracking Input Section */
+.tracking-input-section {
+  padding: 2rem;
+}
+
+.tracking-input-section h1 {
+  color: var(--ghana-blue);
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.section-subtitle {
+  text-align: center;
+  color: var(--ghana-gray-dark);
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.tracking-form {
+  background: linear-gradient(135deg, #f0f8ff 0%, #e8f4f8 100%);
+  padding: 2rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.tracking-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.tracking-form label {
+  display: block;
+  color: var(--ghana-blue);
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+  font-size: 1rem;
+}
+
+.tracking-input {
+  width: 100%;
+  padding: 0.8rem;
+  border: 2px solid var(--ghana-gray-medium);
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+}
+
+.tracking-input:focus {
+  outline: none;
+  border-color: var(--ghana-blue);
+  box-shadow: 0 0 0 3px rgba(0, 61, 165, 0.1);
+}
+
+.tracking-input.input-error {
+  border-color: var(--ghana-danger);
+}
+
+.input-hint {
+  font-size: 0.85rem;
+  color: #999;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+.error-message {
+  color: var(--ghana-danger);
+  font-weight: 600;
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.tracking-form .btn-primary {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.tracking-info {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  border-left: 4px solid var(--ghana-orange);
+}
+
+.tracking-info h3 {
+  color: var(--ghana-blue);
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.tracking-info ul {
+  list-style: none;
+  padding: 0;
+}
+
+.tracking-info li {
+  color: var(--ghana-gray-dark);
+  padding: 0.6rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.tracking-info li:before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--ghana-orange);
+  font-weight: bold;
+}
+
 /* Status Card */
 .status-card {
   background-color: var(--ghana-white);

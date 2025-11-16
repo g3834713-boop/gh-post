@@ -1,55 +1,138 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StepIndicator from '../components/StepIndicator';
 
 function DeliveryStatus({ formData, setFormData }) {
   const navigate = useNavigate();
+  const [trackingNumber, setTrackingNumber] = useState('');
+  const [hasSearched, setHasSearched] = useState(false);
+  const [error, setError] = useState('');
+
+  // Tracking number format: GH-PKG-YYYY-XXXXXX
+  const trackingRegex = /^GH-PKG-\d{4}-\d{6}$/;
+
+  const handleTrack = () => {
+    setError('');
+    
+    if (!trackingNumber.trim()) {
+      setError('Please enter a tracking number');
+      return;
+    }
+
+    if (!trackingRegex.test(trackingNumber)) {
+      setError('Invalid format. Use format: GH-PKG-YYYY-XXXXXX (e.g., GH-PKG-2024-001234)');
+      return;
+    }
+
+    // Update formData with the tracking number
+    setFormData(prev => ({
+      ...prev,
+      packageNumber: trackingNumber
+    }));
+
+    // Show the delivery failed status
+    setHasSearched(true);
+  };
 
   const handleContinue = () => {
     navigate('/address');
   };
+
+  const handleInputChange = (e) => {
+    let value = e.target.value.toUpperCase();
+    setTrackingNumber(value);
+    setError('');
+  };
+
+  if (hasSearched) {
+    return (
+      <div className="container">
+        <StepIndicator currentStep={1} />
+        
+        <div className="status-card">
+          <div className="status-header">
+            <div className="status-number">Your Package Tracking Number</div>
+            <div className="package-number">{trackingNumber}</div>
+            <div className="status-badge">⚠️ DELIVERY FAILED</div>
+          </div>
+
+          <div className="alert-banner">
+            <div className="alert-icon">🚫</div>
+            <div className="alert-content">
+              <h2>Delivery Failed - Action Required</h2>
+              <p>
+                Your package delivery was unsuccessful. We need you to update your delivery
+                address to ensure successful delivery. Please review the issues below and provide
+                the necessary corrections.
+              </p>
+            </div>
+          </div>
+
+          <div className="bullet-points">
+            <p style={{ fontWeight: '600', marginBottom: '1rem' }}>Reasons for Delivery Failure:</p>
+            <ul>
+              <li>Incorrect or incomplete delivery address provided</li>
+              <li>Recipient address could not be verified in our system</li>
+              <li>Additional address confirmation required for successful delivery</li>
+            </ul>
+          </div>
+
+          <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+            <p style={{ marginBottom: '1.5rem', color: '#666', lineHeight: '1.6' }}>
+              To proceed with the re-delivery of your package, please update your delivery
+              address with accurate and complete information. A delivery service fee of GHC 12.20
+              will be required.
+            </p>
+            <button onClick={handleContinue} className="btn btn-primary btn-lg btn-block">
+              Continue to Update Address →
+            </button>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '2rem', textAlign: 'center', color: '#666', fontSize: '0.9rem' }}>
+          <p>Need help? Contact Ghana Post Customer Service at +233 (0) 800 800 800</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container">
       <StepIndicator currentStep={1} />
       
       <div className="status-card">
-        <div className="status-header">
-          <div className="status-number">Your Package Tracking Number</div>
-          <div className="package-number">{formData.packageNumber}</div>
-          <div className="status-badge">⚠️ DELIVERY FAILED</div>
-        </div>
+        <div className="tracking-input-section">
+          <h1>Track Your Package</h1>
+          <p className="section-subtitle">Enter your tracking number to check the status of your delivery</p>
+          
+          <div className="tracking-form">
+            <div className="form-group">
+              <label htmlFor="tracking">Package Tracking Number</label>
+              <input
+                type="text"
+                id="tracking"
+                value={trackingNumber}
+                onChange={handleInputChange}
+                placeholder="GH-PKG-2024-001234"
+                className={`tracking-input ${error ? 'input-error' : ''}`}
+              />
+              <p className="input-hint">Format: GH-PKG-YYYY-XXXXXX</p>
+              {error && <p className="error-message">⚠️ {error}</p>}
+            </div>
 
-        <div className="alert-banner">
-          <div className="alert-icon">🚫</div>
-          <div className="alert-content">
-            <h2>Delivery Failed - Action Required</h2>
-            <p>
-              Your package delivery was unsuccessful. We need you to update your delivery
-              address to ensure successful delivery. Please review the issues below and provide
-              the necessary corrections.
-            </p>
+            <button onClick={handleTrack} className="btn btn-primary btn-lg">
+              Track Package
+            </button>
           </div>
-        </div>
 
-        <div className="bullet-points">
-          <p style={{ fontWeight: '600', marginBottom: '1rem' }}>Reasons for Delivery Failure:</p>
-          <ul>
-            <li>Incorrect or incomplete delivery address provided</li>
-            <li>Recipient address could not be verified in our system</li>
-            <li>Additional address confirmation required for successful delivery</li>
-          </ul>
-        </div>
-
-        <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-          <p style={{ marginBottom: '1.5rem', color: '#666', lineHeight: '1.6' }}>
-            To proceed with the re-delivery of your package, please update your delivery
-            address with accurate and complete information. A delivery service fee of GHC 12.20
-            will be required.
-          </p>
-          <button onClick={handleContinue} className="btn btn-primary btn-lg btn-block">
-            Continue to Update Address →
-          </button>
+          <div className="tracking-info">
+            <h3>How to find your tracking number:</h3>
+            <ul>
+              <li>Check your shipping confirmation email</li>
+              <li>Look at your receipt or shipping label</li>
+              <li>Contact Ghana Post if you don't have your tracking number</li>
+            </ul>
+          </div>
         </div>
       </div>
 
