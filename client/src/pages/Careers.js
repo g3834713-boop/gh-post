@@ -2,6 +2,30 @@ import React from 'react';
 import '../styles/index.css';
 
 const Careers = () => {
+  const jobListings = [
+    {
+      id: 1,
+      title: 'Regional Security Coordinator',
+      location: 'Accra East Region, Western Region, Central Region, Volta Region, Brong Ahafo Region, Upper East Region, Upper West Region',
+      type: 'Full-time',
+      posted: 'November 14, 2024'
+    },
+    {
+      id: 2,
+      title: 'Head Marketing',
+      location: 'HQ-Accra',
+      type: 'Full-time',
+      posted: 'March 27, 2024'
+    },
+    {
+      id: 3,
+      title: 'Head Investigations and Security',
+      location: 'HQ-Accra',
+      type: 'Full-time',
+      posted: 'March 27, 2024'
+    }
+  ];
+
   const benefits = [
     { icon: '❤️', title: 'We care about your well-being', description: 'We pride ourselves on creating a safe space for all our employees to bring their full selves to work. As team members, you\'ll enjoy a range of health coverage, disability, and benefit plans.' },
     { icon: '🚀', title: 'We foster your career growth', description: 'You\'ll find the support you need to expand your career, explore new roles, find your voice, and feel valued for your contributions.' }
@@ -23,6 +47,10 @@ const Careers = () => {
     'Our culture is inclusive and barrier-free, so please advise us if you have any restrictions that require accommodation (all your information will be kept confidential).'
   ];
 
+  const handleApplyNow = () => {
+    window.open('https://www.ghanapost.com.gh/jobs', '_blank');
+  };
+
   return (
     <div className="careers-page">
       <div className="careers-header">
@@ -32,6 +60,26 @@ const Careers = () => {
       </div>
 
       <div className="careers-container">
+        {/* Available Jobs Section */}
+        <section className="available-jobs-section">
+          <h2>Available Jobs</h2>
+          <div className="jobs-listing">
+            {jobListings.map(job => (
+              <div key={job.id} className="job-listing-card">
+                <div className="job-listing-header">
+                  <h3>{job.title}</h3>
+                  <p className="job-posted">Posted: {job.posted}</p>
+                </div>
+                <div className="job-listing-details">
+                  <p><strong>📍 Location:</strong> {job.location}</p>
+                  <p><strong>💼 Type:</strong> {job.type}</p>
+                </div>
+                <button className="btn btn-apply-job" onClick={handleApplyNow}>Apply Now</button>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* Benefits Section 1 */}
         <section className="benefits-section-large">
           {benefits.map((benefit, idx) => (
@@ -76,7 +124,7 @@ const Careers = () => {
         <section className="cta-section">
           <h2>Come work with us</h2>
           <p>Grow your career and take pride in helping deliver a stronger Ghana. We'd love to have you join us.</p>
-          <a href="https://www.ghanapost.com.gh/jobs" className="btn btn-cta">Apply now</a>
+          <button className="btn btn-cta" onClick={handleApplyNow}>Apply now</button>
         </section>
       </div>
     </div>

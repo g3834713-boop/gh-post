@@ -1640,6 +1640,84 @@ table tbody tr:hover {
   margin: 0 auto;
 }
 
+/* Available Jobs Section */
+.available-jobs-section {
+  padding: 4rem 2rem;
+  background: white;
+}
+
+.available-jobs-section h2 {
+  color: var(--ghana-blue);
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  font-weight: 600;
+}
+
+.jobs-listing {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+}
+
+.job-listing-card {
+  background: linear-gradient(135deg, #f0f8ff 0%, #e8f4f8 100%);
+  padding: 2rem;
+  border-radius: 8px;
+  border-left: 4px solid var(--ghana-blue);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.job-listing-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 61, 165, 0.15);
+  transform: translateY(-4px);
+}
+
+.job-listing-header {
+  margin-bottom: 1.5rem;
+}
+
+.job-listing-header h3 {
+  color: var(--ghana-blue);
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.job-posted {
+  color: var(--ghana-orange);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.job-listing-details {
+  margin-bottom: 1.5rem;
+}
+
+.job-listing-details p {
+  color: var(--ghana-gray-dark);
+  margin: 0.8rem 0;
+  line-height: 1.6;
+}
+
+.btn-apply-job {
+  background-color: var(--ghana-blue);
+  color: white;
+  padding: 0.8rem 2rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.btn-apply-job:hover {
+  background-color: var(--ghana-blue-dark);
+  transform: translateY(-2px);
+}
+
 /* Benefits Large Section */
 .benefits-section-large {
   display: grid;
@@ -1833,6 +1911,10 @@ table tbody tr:hover {
 
   .careers-header p {
     font-size: 1rem;
+  }
+
+  .jobs-listing {
+    grid-template-columns: 1fr;
   }
 
   .benefit-large-card {
