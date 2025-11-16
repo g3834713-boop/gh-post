@@ -7,6 +7,7 @@ import SuccessPage from './pages/SuccessPage';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AboutUs from './pages/AboutUs';
+import Services from './pages/Services';
 import TermsAndConditions from './pages/TermsAndConditions';
 import ContactUs from './pages/ContactUs';
 import Navbar from './components/Navbar';
@@ -50,6 +51,7 @@ function App() {
           <Route path="/payment" element={<PaymentForm formData={formData} setFormData={setFormData} />} />
           <Route path="/success" element={<SuccessPage />} />
           <Route path="/about" element={<AboutUs />} />
+          <Route path="/services" element={<Services />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/termsandconditions" element={<TermsAndConditions />} />
 
