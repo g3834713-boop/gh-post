@@ -1598,3 +1598,257 @@ table tbody tr:hover {
   }
 }
 
+/* Careers Page */
+.careers-page {
+  flex: 1;
+  padding: 0;
+  background: white;
+  min-height: calc(100vh - 200px);
+}
+
+.careers-header {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: linear-gradient(135deg, var(--ghana-blue) 0%, var(--ghana-blue-dark) 100%);
+  color: white;
+  border-bottom: 3px solid var(--ghana-orange);
+}
+
+.careers-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 300;
+  letter-spacing: 1px;
+}
+
+.careers-header h2 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  font-weight: 400;
+}
+
+.careers-header p {
+  font-size: 1.1rem;
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.8;
+  font-weight: 300;
+}
+
+.careers-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Benefits Large Section */
+.benefits-section-large {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  padding: 4rem 2rem;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8f4f8 100%);
+}
+
+.benefit-large-card {
+  background: white;
+  padding: 3rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.benefit-large-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.benefit-large-card h3 {
+  color: var(--ghana-blue);
+  font-size: 1.6rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.benefit-large-card p {
+  color: var(--ghana-gray-dark);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+/* Application Steps */
+.application-steps {
+  padding: 4rem 2rem;
+  background: white;
+}
+
+.application-steps h2 {
+  color: var(--ghana-blue);
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.section-subtitle {
+  text-align: center;
+  color: var(--ghana-gray-dark);
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.step-card-large {
+  text-align: center;
+  padding: 2rem;
+  background: var(--ghana-gray-light);
+  border-radius: 8px;
+  border-top: 4px solid var(--ghana-orange);
+}
+
+.step-number-large {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: var(--ghana-blue);
+  color: white;
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.step-card-large h4 {
+  color: var(--ghana-blue);
+  font-size: 1.1rem;
+  margin-bottom: 0.8rem;
+  font-weight: 600;
+}
+
+.step-card-large p {
+  color: var(--ghana-gray-dark);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* Expectations Section */
+.expectations-section {
+  padding: 4rem 2rem;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8f4f8 100%);
+}
+
+.expectations-section h2 {
+  color: var(--ghana-blue);
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.expectations-list {
+  max-width: 800px;
+  margin: 2rem auto;
+}
+
+.expectation-item {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.check-mark {
+  color: var(--ghana-success);
+  font-size: 1.5rem;
+  font-weight: bold;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.expectation-item p {
+  color: var(--ghana-gray-dark);
+  line-height: 1.8;
+  margin: 0;
+}
+
+/* CTA Section */
+.cta-section {
+  padding: 4rem 2rem;
+  background: white;
+  text-align: center;
+  border-top: 1px solid var(--ghana-gray-medium);
+}
+
+.cta-section h2 {
+  color: var(--ghana-blue);
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.cta-section p {
+  color: var(--ghana-gray-dark);
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  line-height: 1.8;
+}
+
+.btn-cta {
+  display: inline-block;
+  background-color: var(--ghana-blue);
+  color: white;
+  padding: 1rem 3rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-size: 1rem;
+}
+
+.btn-cta:hover {
+  background-color: var(--ghana-blue-dark);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .careers-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .careers-header h2 {
+    font-size: 1.4rem;
+  }
+
+  .careers-header p {
+    font-size: 1rem;
+  }
+
+  .benefit-large-card {
+    padding: 2rem;
+  }
+
+  .steps-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .expectation-item {
+    gap: 1rem;
+  }
+
+  .cta-section h2 {
+    font-size: 1.6rem;
+  }
+}
+

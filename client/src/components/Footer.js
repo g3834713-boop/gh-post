@@ -9,7 +9,7 @@ const Footer = () => {
           <h4>Ghana Post</h4>
           <ul>
             <li><Link to="/about">Our Company</Link></li>
-            <li><a href="#careers">Working at Ghana Post</a></li>
+            <li><Link to="/careers">Working at Ghana Post</Link></li>
             <li><Link to="/termsandconditions">Terms & Conditions</Link></li>
           </ul>
         </div>

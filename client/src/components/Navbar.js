@@ -17,6 +17,7 @@ function Navbar({ adminToken, onLogout }) {
       <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
         <Link to="/about" style={{ color: 'white', textDecoration: 'none' }}>About</Link>
         <Link to="/services" style={{ color: 'white', textDecoration: 'none' }}>Services</Link>
+        <Link to="/careers" style={{ color: 'white', textDecoration: 'none' }}>Careers</Link>
         <Link to="/contact" style={{ color: 'white', textDecoration: 'none' }}>Contact</Link>
         {adminToken ? (
           <>
