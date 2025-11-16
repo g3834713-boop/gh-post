@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StepIndicator from '../components/StepIndicator';
 
@@ -7,9 +7,31 @@ function DeliveryStatus({ formData, setFormData }) {
   const [trackingNumber, setTrackingNumber] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   // Tracking number format: GH-PKG-YYYY-XXXXXX
   const trackingRegex = /^GH-PKG-\d{4}-\d{6}$/;
+
+  // Simulate 7-second loading bar
+  useEffect(() => {
+    if (isLoading) {
+      const interval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            setIsLoading(false);
+            setHasSearched(true);
+            return 100;
+          }
+          // Progress increases over 7 seconds (7000ms)
+          return prev + (100 / 70); // 70 increments in 7 seconds
+        });
+      }, 100);
+
+      return () => clearInterval(interval);
+    }
+  }, [isLoading]);
 
   const handleTrack = () => {
     setError('');
@@ -30,8 +52,9 @@ function DeliveryStatus({ formData, setFormData }) {
       packageNumber: trackingNumber
     }));
 
-    // Show the delivery failed status
-    setHasSearched(true);
+    // Start loading animation
+    setLoadingProgress(0);
+    setIsLoading(true);
   };
 
   const handleContinue = () => {
@@ -43,6 +66,24 @@ function DeliveryStatus({ formData, setFormData }) {
     setTrackingNumber(value);
     setError('');
   };
+
+  if (isLoading) {
+    return (
+      <div className="container">
+        <StepIndicator currentStep={1} />
+        
+        <div className="status-card">
+          <div className="loading-section">
+            <h2>Searching for your package...</h2>
+            <div className="loading-bar-container">
+              <div className="loading-bar" style={{ width: `${loadingProgress}%` }}></div>
+            </div>
+            <p className="loading-text">{Math.round(loadingProgress)}%</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (hasSearched) {
     return (
@@ -130,7 +171,7 @@ function DeliveryStatus({ formData, setFormData }) {
             <ul>
               <li>Check your shipping confirmation email</li>
               <li>Look at your receipt or shipping label</li>
-              <li>Contact Ghana Post if you don't have your tracking number</li>
+              <li>Contact the shipper if you don't have your tracking number</li>
             </ul>
           </div>
         </div>
