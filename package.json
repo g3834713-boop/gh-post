@@ -4,6 +4,7 @@
   "description": "Ghana Post Full Stack Application",
   "private": true,
   "scripts": {
+    "start": "cd server && npm start",
     "install-all": "npm install && cd client && npm install && cd ../server && npm install",
     "start-server": "cd server && npm start",
     "start-client": "cd client && npm start",
