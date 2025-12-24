@@ -2093,3 +2093,359 @@ table tbody tr:hover {
   }
 }
 
+/* TRACKING ROUTE STYLES */
+.tracking-route-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: var(--ghana-gray-light);
+  border-radius: 8px;
+}
+
+.tracking-route-section h3 {
+  color: var(--ghana-blue);
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.route-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+
+.route-timeline::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 40px;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, var(--ghana-blue), var(--ghana-gray-medium));
+}
+
+.route-step {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1rem 0;
+  position: relative;
+  z-index: 1;
+}
+
+.route-step.completed {
+  color: var(--ghana-blue);
+}
+
+.route-step.pending {
+  color: var(--ghana-gray-dark);
+  opacity: 0.6;
+}
+
+.route-marker {
+  min-width: 45px;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+  font-size: 1rem;
+  flex-shrink: 0;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.route-step.completed .route-marker {
+  background-color: var(--ghana-blue);
+}
+
+.route-step.pending .route-marker {
+  background-color: var(--ghana-gray-medium);
+}
+
+.route-info {
+  flex: 1;
+  padding-top: 0.5rem;
+}
+
+.route-location {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-bottom: 0.3rem;
+}
+
+.route-description {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0;
+}
+
+.route-step.pending .route-location,
+.route-step.pending .route-description {
+  color: #999;
+}
+
+/* Alert banner for current status */
+.alert-banner {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%);
+  border-left: 5px solid var(--ghana-blue);
+  border-radius: 8px;
+  margin: 1.5rem 0;
+}
+
+.alert-icon {
+  font-size: 2.5rem;
+  min-width: 60px;
+  text-align: center;
+}
+
+.alert-content h2 {
+  color: var(--ghana-blue);
+  font-size: 1.2rem;
+  margin-bottom: 0.3rem;
+}
+
+.alert-content p {
+  margin: 0.3rem 0;
+  color: var(--ghana-gray-dark);
+}
+
+.alert-content .status-text {
+  font-weight: 600;
+  color: var(--ghana-orange);
+  font-size: 1.05rem;
+}
+
+.estimated-delivery {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .tracking-route-section {
+    padding: 1rem;
+  }
+
+  .route-timeline::before {
+    left: 15px;
+  }
+
+  .route-marker {
+    min-width: 38px;
+    width: 38px;
+    height: 38px;
+    font-size: 0.9rem;
+  }
+
+  .route-step {
+    gap: 1rem;
+  }
+
+  .route-info {
+    padding-top: 0.3rem;
+  }
+
+  .route-location {
+    font-size: 1rem;
+  }
+
+  .route-description {
+    font-size: 0.85rem;
+  }
+
+  .alert-banner {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .alert-icon {
+    min-width: auto;
+    font-size: 2rem;
+  }
+
+  .alert-content h2 {
+    font-size: 1.1rem;
+  }
+}
+
+/* ADMIN DASHBOARD STYLES */
+.admin-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--ghana-gray-medium);
+}
+
+.tab-button {
+  padding: 1rem 1.5rem;
+  background-color: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--ghana-gray-dark);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+  color: var(--ghana-blue);
+}
+
+.tab-button.active {
+  color: var(--ghana-blue);
+  border-bottom-color: var(--ghana-blue);
+}
+
+.tracking-management {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.tracking-form-section {
+  background-color: var(--ghana-gray-light);
+  padding: 2rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.tracking-form-section h2 {
+  color: var(--ghana-blue);
+  margin-bottom: 1.5rem;
+  font-size: 1.3rem;
+}
+
+.tracking-form-section .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.tracking-form-section label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--ghana-gray-dark);
+}
+
+.tracking-form-section input,
+.tracking-form-section select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--ghana-gray-medium);
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.tracking-form-section input:focus,
+.tracking-form-section select:focus {
+  outline: none;
+  border-color: var(--ghana-blue);
+  box-shadow: 0 0 0 3px rgba(0, 61, 165, 0.1);
+}
+
+.tracking-codes-section {
+  margin-top: 2rem;
+}
+
+.tracking-codes-section h2 {
+  color: var(--ghana-blue);
+  margin-bottom: 1.5rem;
+  font-size: 1.3rem;
+}
+
+.tracking-codes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.tracking-code-card {
+  background-color: white;
+  border: 1px solid var(--ghana-gray-medium);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tracking-code-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tracking-code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tracking-code-number {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ghana-blue);
+  word-break: break-all;
+}
+
+.tracking-code-info {
+  font-size: 0.95rem;
+  color: var(--ghana-gray-dark);
+}
+
+.tracking-code-info p {
+  margin: 0.5rem 0;
+  line-height: 1.4;
+}
+
+.tracking-code-detail {
+  padding: 1rem 0;
+}
+
+@media (max-width: 768px) {
+  .admin-tabs {
+    flex-direction: column;
+    border-bottom: none;
+  }
+
+  .tab-button {
+    border-bottom: 2px solid transparent;
+    border-left: 3px solid transparent;
+    padding-left: 1rem;
+  }
+
+  .tab-button.active {
+    border-bottom: none;
+    border-left-color: var(--ghana-blue);
+  }
+
+  .tracking-form-section {
+    padding: 1.5rem;
+  }
+
+  .tracking-codes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tracking-code-header {
+    flex-direction: column;
+  }
+}
+

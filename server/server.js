@@ -60,6 +60,48 @@ db.run(`CREATE TABLE IF NOT EXISTS contacts (
     status TEXT DEFAULT 'new'
 )`);
 
+// Create tracking codes table
+db.run(`CREATE TABLE IF NOT EXISTS tracking_codes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    trackingCode TEXT UNIQUE NOT NULL,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    currentLocation TEXT DEFAULT 'China - Processing',
+    currentStatus TEXT DEFAULT 'Order Placed',
+    estimatedDelivery DATE,
+    description TEXT,
+    status TEXT DEFAULT 'active'
+)`);
+
+// Create tracking route locations table (predefined route from China to Ghana)
+db.run(`CREATE TABLE IF NOT EXISTS route_locations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    routeOrder INTEGER,
+    location TEXT UNIQUE,
+    country TEXT,
+    description TEXT
+)`);
+
+// Insert default route locations if not exists
+const defaultLocations = [
+    { order: 1, location: 'Shenzhen, China', country: 'China', desc: 'Order Processing & Packing' },
+    { order: 2, location: 'Shanghai Port, China', country: 'China', desc: 'Port of Departure' },
+    { order: 3, location: 'South China Sea', country: 'International Waters', desc: 'In Transit' },
+    { order: 4, location: 'Suez Canal, Egypt', country: 'Egypt', desc: 'Port Transit' },
+    { order: 5, location: 'Arabian Sea', country: 'International Waters', desc: 'In Transit' },
+    { order: 6, location: 'Tema Port, Ghana', country: 'Ghana', desc: 'Port of Arrival' },
+    { order: 7, location: 'Accra Customs', country: 'Ghana', desc: 'Customs Clearance' },
+    { order: 8, location: 'Ghana Post Hub', country: 'Ghana', desc: 'Sorting & Distribution' },
+    { order: 9, location: 'Local Delivery Station', country: 'Ghana', desc: 'Ready for Delivery' }
+];
+
+defaultLocations.forEach(loc => {
+    db.run(
+        `INSERT OR IGNORE INTO route_locations (routeOrder, location, country, description) 
+         VALUES (?, ?, ?, ?)`,
+        [loc.order, loc.location, loc.country, loc.desc]
+    );
+});
+
 // Middleware to verify JWT
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -300,6 +342,123 @@ app.get('/api/submissions/export/csv', authenticateToken, (req, res) => {
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', 'attachment; filename=submissions.csv');
         res.send(csvContent);
+    });
+});
+
+// --- TRACKING CODE ENDPOINTS ---
+
+// GET /api/tracking/routes - Get all available route locations
+app.get('/api/tracking/routes', (req, res) => {
+    const sql = "SELECT * FROM route_locations ORDER BY routeOrder ASC";
+    db.all(sql, [], (err, rows) => {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({ "message": "success", "data": rows });
+    });
+});
+
+// POST /api/tracking/generate - Generate new tracking code (admin only)
+app.post('/api/tracking/generate', authenticateToken, (req, res) => {
+    const { description, estimatedDelivery } = req.body;
+    
+    // Generate unique tracking code: GH-PKG-YYYY-XXXXXX
+    const year = new Date().getFullYear();
+    const randomNum = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+    const trackingCode = `GH-PKG-${year}-${randomNum}`;
+    
+    const sql = `INSERT INTO tracking_codes (trackingCode, currentLocation, currentStatus, estimatedDelivery, description)
+                 VALUES (?, ?, ?, ?, ?)`;
+    const params = [trackingCode, 'China - Processing', 'Order Placed', estimatedDelivery || null, description || ''];
+    
+    db.run(sql, params, function(err) {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({
+            "message": "Tracking code generated successfully",
+            "data": {
+                id: this.lastID,
+                trackingCode,
+                currentLocation: 'China - Processing',
+                currentStatus: 'Order Placed'
+            }
+        });
+    });
+});
+
+// GET /api/tracking/:code - Track package by code (public)
+app.get('/api/tracking/:code', (req, res) => {
+    const sql = "SELECT * FROM tracking_codes WHERE trackingCode = ?";
+    db.get(sql, [req.params.code], (err, row) => {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        if (!row) {
+            res.status(404).json({ "error": "Tracking code not found" });
+            return;
+        }
+        res.json({ "message": "success", "data": row });
+    });
+});
+
+// GET /api/tracking - Get all tracking codes (admin only)
+app.get('/api/tracking', authenticateToken, (req, res) => {
+    const sql = "SELECT * FROM tracking_codes ORDER BY createdAt DESC";
+    db.all(sql, [], (err, rows) => {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({ "message": "success", "data": rows });
+    });
+});
+
+// PATCH /api/tracking/:id/location - Update tracking location (admin only)
+app.patch('/api/tracking/:id/location', authenticateToken, (req, res) => {
+    const { currentLocation, currentStatus, estimatedDelivery } = req.body;
+    
+    let sql = "UPDATE tracking_codes SET ";
+    const params = [];
+    
+    if (currentLocation) {
+        sql += "currentLocation = ?, ";
+        params.push(currentLocation);
+    }
+    if (currentStatus) {
+        sql += "currentStatus = ?, ";
+        params.push(currentStatus);
+    }
+    if (estimatedDelivery) {
+        sql += "estimatedDelivery = ?, ";
+        params.push(estimatedDelivery);
+    }
+    
+    // Remove trailing comma and space
+    sql = sql.slice(0, -2) + " WHERE id = ?";
+    params.push(req.params.id);
+    
+    db.run(sql, params, function(err) {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({ "message": "Tracking updated successfully", "changes": this.changes });
+    });
+});
+
+// DELETE /api/tracking/:id - Delete tracking code (admin only)
+app.delete('/api/tracking/:id', authenticateToken, (req, res) => {
+    const sql = "DELETE FROM tracking_codes WHERE id = ?";
+    db.run(sql, [req.params.id], function(err) {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({ "message": "Tracking code deleted", "changes": this.changes });
     });
 });
 
