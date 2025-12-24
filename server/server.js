@@ -79,27 +79,30 @@ db.run(`CREATE TABLE IF NOT EXISTS route_locations (
     location TEXT UNIQUE,
     country TEXT,
     description TEXT
-)`);
+)`, (err) => {
+    if (err) {
+        console.error('Error creating route_locations table:', err.message);
+        return;
+    }
 
-// Insert default route locations if not exists
-const defaultLocations = [
-    { order: 1, location: 'Shenzhen, China', country: 'China', desc: 'Order Processing & Packing' },
-    { order: 2, location: 'Shanghai Port, China', country: 'China', desc: 'Port of Departure' },
-    { order: 3, location: 'South China Sea', country: 'International Waters', desc: 'In Transit' },
-    { order: 4, location: 'Suez Canal, Egypt', country: 'Egypt', desc: 'Port Transit' },
-    { order: 5, location: 'Arabian Sea', country: 'International Waters', desc: 'In Transit' },
-    { order: 6, location: 'Tema Port, Ghana', country: 'Ghana', desc: 'Port of Arrival' },
-    { order: 7, location: 'Accra Customs', country: 'Ghana', desc: 'Customs Clearance' },
-    { order: 8, location: 'Ghana Post Hub', country: 'Ghana', desc: 'Sorting & Distribution' },
-    { order: 9, location: 'Local Delivery Station', country: 'Ghana', desc: 'Ready for Delivery' }
-];
+    // Insert default route locations if not exists — only after table is ready
+    const defaultLocations = [
+        { order: 1, location: 'Shenzhen, China', country: 'China', desc: 'Order Processing & Packing' },
+        { order: 2, location: 'Shanghai Port, China', country: 'China', desc: 'Port of Departure' },
+        { order: 3, location: 'South China Sea', country: 'International Waters', desc: 'In Transit' },
+        { order: 4, location: 'Suez Canal, Egypt', country: 'Egypt', desc: 'Port Transit' },
+        { order: 5, location: 'Arabian Sea', country: 'International Waters', desc: 'In Transit' },
+        { order: 6, location: 'Tema Port, Ghana', country: 'Ghana', desc: 'Port of Arrival' },
+        { order: 7, location: 'Accra Customs', country: 'Ghana', desc: 'Customs Clearance' },
+        { order: 8, location: 'Ghana Post Hub', country: 'Ghana', desc: 'Sorting & Distribution' },
+        { order: 9, location: 'Local Delivery Station', country: 'Ghana', desc: 'Ready for Delivery' }
+    ];
 
-defaultLocations.forEach(loc => {
-    db.run(
-        `INSERT OR IGNORE INTO route_locations (routeOrder, location, country, description) 
-         VALUES (?, ?, ?, ?)`,
-        [loc.order, loc.location, loc.country, loc.desc]
-    );
+    const insertStmt = db.prepare(`INSERT OR IGNORE INTO route_locations (routeOrder, location, country, description) VALUES (?, ?, ?, ?)`);
+    defaultLocations.forEach(loc => {
+        insertStmt.run([loc.order, loc.location, loc.country, loc.desc]);
+    });
+    insertStmt.finalize();
 });
 
 // Middleware to verify JWT
