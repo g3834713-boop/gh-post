@@ -42,7 +42,7 @@ function AddressForm({ formData, setFormData }) {
 
   const handleContinue = () => {
     if (validateForm()) {
-      navigate('/payment');
+      navigate('/success');
     }
   };
 
