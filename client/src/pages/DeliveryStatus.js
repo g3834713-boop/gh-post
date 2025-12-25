@@ -134,6 +134,23 @@ function DeliveryStatus({ formData, setFormData }) {
             <div className="status-badge">📍 {trackingData.currentStatus}</div>
           </div>
 
+          {/* Days Remaining Counter (if available) */}
+          {(trackingData.computedDaysRemaining !== undefined || trackingData.daysToDelivery) && (
+            <div style={{
+              backgroundColor: '#E3F2FD',
+              border: '2px solid #1976D2',
+              borderRadius: '8px',
+              padding: '1.5rem',
+              marginBottom: '2rem',
+              textAlign: 'center'
+            }}>
+              <p style={{ color: '#666', margin: '0 0 0.5rem 0', fontSize: '0.9rem' }}>Estimated Days to Delivery</p>
+              <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#1976D2' }}>
+                {trackingData.computedDaysRemaining || trackingData.daysToDelivery || 60} days
+              </div>
+            </div>
+          )}
+
           <div className="tracking-route-section">
             <h3>Shipment Route</h3>
             <div className="route-timeline">
@@ -155,8 +172,10 @@ function DeliveryStatus({ formData, setFormData }) {
               <h2>Current Location</h2>
               <p>{trackingData.currentLocation}</p>
               <p className="status-text">{trackingData.currentStatus}</p>
-              {trackingData.estimatedDelivery && (
-                <p className="estimated-delivery">Estimated Delivery: {trackingData.estimatedDelivery}</p>
+              {trackingData.description && (
+                <p style={{ marginTop: '0.5rem', fontStyle: 'italic', color: '#777' }}>
+                  {trackingData.description}
+                </p>
               )}
             </div>
           </div>
@@ -173,7 +192,7 @@ function DeliveryStatus({ formData, setFormData }) {
     );
   }
 
-  if (hasSearched) {
+  if (hasSearched && error) {
     return (
       <div className="container">
         <StepIndicator currentStep={1} />
@@ -181,28 +200,28 @@ function DeliveryStatus({ formData, setFormData }) {
           <div className="status-header">
             <div className="status-number">Your Package Tracking Number</div>
             <div className="package-number">{trackingNumber}</div>
-            <div className="status-badge">⚠️ DELIVERY FAILED</div>
+            <div className="status-badge">⚠️ NOT FOUND</div>
           </div>
 
           <div className="alert-banner">
             <div className="alert-icon">🚫</div>
             <div className="alert-content">
-              <h2>Delivery Failed - Action Required</h2>
-              <p>Your package delivery was unsuccessful. Please update your address to proceed with re-delivery.</p>
+              <h2>Tracking Code Not Found</h2>
+              <p>{error}</p>
             </div>
           </div>
 
-          <div className="bullet-points">
-            <p style={{ fontWeight: '600', marginBottom: '1rem' }}>Reasons for Delivery Failure:</p>
-            <ul>
-              <li>Incorrect or incomplete delivery address provided</li>
-              <li>Recipient address could not be verified in our system</li>
-              <li>Additional address confirmation required for successful delivery</li>
-            </ul>
-          </div>
-
           <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-            <button onClick={handleContinue} className="btn btn-primary btn-lg btn-block">Continue to Update Address →</button>
+            <button 
+              onClick={() => {
+                setHasSearched(false);
+                setTrackingNumber('');
+                setError('');
+              }} 
+              className="btn btn-primary btn-lg btn-block"
+            >
+              Try Again →
+            </button>
           </div>
         </div>
 
