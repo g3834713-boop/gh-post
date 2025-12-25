@@ -274,7 +274,7 @@ function DeliveryStatus({ formData, setFormData }) {
               <p className="input-hint">Format: GH-PKG-YYYY-XXXXXX</p>
               {error && <p className="error-message">⚠️ {error}</p>}
             </div>
-            <button onClick={handleTrack} className="btn btn-primary btn-lg">Track Package</button>
+            <button onClick={() => handleTrack()} className="btn btn-primary btn-lg">Track Package</button>
           </div>
 
           <div className="tracking-info">
