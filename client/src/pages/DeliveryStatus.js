@@ -31,10 +31,17 @@ function DeliveryStatus({ formData, setFormData }) {
 
   const handleTrack = async (overrideNumber) => {
     setError('');
-    // Convert to string, trim, and ensure uppercase
-    let num = (overrideNumber !== undefined ? overrideNumber : trackingNumber || '').toString().trim().toUpperCase();
+    // Safely handle conversion: if overrideNumber is passed, use it; otherwise use trackingNumber from state
+    let inputValue = overrideNumber !== undefined ? overrideNumber : trackingNumber;
     
-    console.log('Tracking input:', num); // Debug
+    // Ensure it's a string
+    if (typeof inputValue !== 'string') {
+      inputValue = String(inputValue || '');
+    }
+    
+    const num = inputValue.trim().toUpperCase();
+    
+    console.log('Tracking input:', num, 'Type:', typeof num); // Debug
     
     if (!num) {
       setError('Please enter a tracking number');
