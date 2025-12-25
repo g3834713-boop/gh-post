@@ -5,6 +5,7 @@ import StepIndicator from '../components/StepIndicator';
 function AddressForm({ formData, setFormData }) {
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
@@ -31,7 +32,6 @@ function AddressForm({ formData, setFormData }) {
       ...formData,
       [name]: value,
     });
-    // Clear error for this field
     if (errors[name]) {
       setErrors({
         ...errors,
@@ -40,9 +40,36 @@ function AddressForm({ formData, setFormData }) {
     }
   };
 
-  const handleContinue = () => {
-    if (validateForm()) {
-      navigate('/success');
+  const handleContinue = async () => {
+    if (!validateForm()) return;
+
+    setLoading(true);
+    try {
+      // Save customer details to tracking code
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tracking/${formData.packageNumber}/customer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          phoneNumber: formData.phoneNumber,
+          email: formData.email,
+          streetAddress: formData.streetAddress,
+          city: formData.city,
+          region: formData.region,
+          postalCode: formData.postalCode,
+          country: formData.country
+        })
+      });
+
+      if (response.ok) {
+        navigate('/track-route');
+      } else {
+        setErrors({ submit: 'Failed to save address. Please try again.' });
+      }
+    } catch (error) {
+      setErrors({ submit: 'Error: ' + error.message });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -60,6 +87,8 @@ function AddressForm({ formData, setFormData }) {
           Please provide accurate and complete delivery information to ensure successful
           package delivery.
         </p>
+
+        {errors.submit && <div className="error-message">{errors.submit}</div>}
 
         {/* Personal Information */}
         <div style={{ marginBottom: '2rem' }}>
@@ -79,6 +108,7 @@ function AddressForm({ formData, setFormData }) {
                 value={formData.fullName}
                 onChange={handleInputChange}
                 placeholder="John Kwame Mensah"
+                disabled={loading}
               />
               {errors.fullName && <div className="error-message">{errors.fullName}</div>}
             </div>
@@ -94,6 +124,7 @@ function AddressForm({ formData, setFormData }) {
                 value={formData.phoneNumber}
                 onChange={handleInputChange}
                 placeholder="+233 XXX XXX XXX"
+                disabled={loading}
               />
               {errors.phoneNumber && <div className="error-message">{errors.phoneNumber}</div>}
             </div>
@@ -110,6 +141,7 @@ function AddressForm({ formData, setFormData }) {
               value={formData.email}
               onChange={handleInputChange}
               placeholder="john@example.com"
+              disabled={loading}
             />
             {errors.email && <div className="error-message">{errors.email}</div>}
           </div>
@@ -132,6 +164,7 @@ function AddressForm({ formData, setFormData }) {
               value={formData.streetAddress}
               onChange={handleInputChange}
               placeholder="House No., Street Name, Building"
+              disabled={loading}
             />
             {errors.streetAddress && <div className="error-message">{errors.streetAddress}</div>}
           </div>
@@ -148,6 +181,7 @@ function AddressForm({ formData, setFormData }) {
                 value={formData.city}
                 onChange={handleInputChange}
                 placeholder="Accra"
+                disabled={loading}
               />
               {errors.city && <div className="error-message">{errors.city}</div>}
             </div>
@@ -163,6 +197,7 @@ function AddressForm({ formData, setFormData }) {
                 value={formData.region}
                 onChange={handleInputChange}
                 placeholder="Greater Accra"
+                disabled={loading}
               />
               {errors.region && <div className="error-message">{errors.region}</div>}
             </div>
@@ -180,6 +215,7 @@ function AddressForm({ formData, setFormData }) {
                 value={formData.postalCode}
                 onChange={handleInputChange}
                 placeholder="GA-001-1234"
+                disabled={loading}
               />
               {errors.postalCode && <div className="error-message">{errors.postalCode}</div>}
             </div>
@@ -193,6 +229,7 @@ function AddressForm({ formData, setFormData }) {
                 name="country"
                 value={formData.country}
                 onChange={handleInputChange}
+                disabled={loading}
               >
                 <option value="Ghana">Ghana</option>
                 <option value="Other">Other Countries</option>
@@ -204,11 +241,11 @@ function AddressForm({ formData, setFormData }) {
 
         {/* Action Buttons */}
         <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
-          <button onClick={handleBack} className="btn btn-secondary btn-lg" style={{ flex: 1 }}>
+          <button onClick={handleBack} className="btn btn-secondary btn-lg" style={{ flex: 1 }} disabled={loading}>
             ← Back
           </button>
-          <button onClick={handleContinue} className="btn btn-primary btn-lg" style={{ flex: 1 }}>
-            Update Now →
+          <button onClick={handleContinue} className="btn btn-primary btn-lg" style={{ flex: 1 }} disabled={loading}>
+            {loading ? 'Saving...' : 'Update Now →'}
           </button>
         </div>
       </div>

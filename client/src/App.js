@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import DeliveryStatus from './pages/DeliveryStatus';
 import AddressForm from './pages/AddressForm';
+import TrackRoute from './pages/TrackRoute';
 import PaymentForm from './pages/PaymentForm';
 import SuccessPage from './pages/SuccessPage';
 import AdminLogin from './pages/AdminLogin';
@@ -49,7 +50,8 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<DeliveryStatus formData={formData} setFormData={setFormData} />} />
           <Route path="/address" element={<AddressForm formData={formData} setFormData={setFormData} />} />
-          <Route path="/payment" element={<PaymentForm formData={formData} setFormData={setFormData} />} />
+          <Route path="/track-route" element={<TrackRoute formData={formData} />} />
+          <Route path="/payment" element={<PaymentForm formData={formData} />} />
           <Route path="/success" element={<SuccessPage />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/services" element={<Services />} />

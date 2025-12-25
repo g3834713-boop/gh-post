@@ -68,8 +68,17 @@ db.run(`CREATE TABLE IF NOT EXISTS tracking_codes (
     currentLocation TEXT DEFAULT 'China - Processing',
     currentStatus TEXT DEFAULT 'Order Placed',
     estimatedDelivery DATE,
+    daysToDelivery INTEGER DEFAULT 60,
     description TEXT,
-    status TEXT DEFAULT 'active'
+    status TEXT DEFAULT 'active',
+    customerFullName TEXT,
+    customerPhone TEXT,
+    customerEmail TEXT,
+    customerAddress TEXT,
+    customerCity TEXT,
+    customerRegion TEXT,
+    customerPostalCode TEXT,
+    customerCountry TEXT
 )`);
 
 // Create tracking route locations table (predefined route from China to Ghana)
@@ -364,16 +373,16 @@ app.get('/api/tracking/routes', (req, res) => {
 
 // POST /api/tracking/generate - Generate new tracking code (admin only)
 app.post('/api/tracking/generate', authenticateToken, (req, res) => {
-    const { description, estimatedDelivery } = req.body;
+    const { description, daysToDelivery } = req.body;
     
     // Generate unique tracking code: GH-PKG-YYYY-XXXXXX
     const year = new Date().getFullYear();
     const randomNum = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
     const trackingCode = `GH-PKG-${year}-${randomNum}`;
     
-    const sql = `INSERT INTO tracking_codes (trackingCode, currentLocation, currentStatus, estimatedDelivery, description)
+    const sql = `INSERT INTO tracking_codes (trackingCode, currentLocation, currentStatus, daysToDelivery, description)
                  VALUES (?, ?, ?, ?, ?)`;
-    const params = [trackingCode, 'China - Processing', 'Order Placed', estimatedDelivery || null, description || ''];
+    const params = [trackingCode, 'Shenzhen, China', 'Order Placed', daysToDelivery || 60, description || ''];
     
     db.run(sql, params, function(err) {
         if (err) {
@@ -385,8 +394,9 @@ app.post('/api/tracking/generate', authenticateToken, (req, res) => {
             "data": {
                 id: this.lastID,
                 trackingCode,
-                currentLocation: 'China - Processing',
-                currentStatus: 'Order Placed'
+                currentLocation: 'Shenzhen, China',
+                currentStatus: 'Order Placed',
+                daysToDelivery: daysToDelivery || 60
             }
         });
     });
@@ -408,6 +418,32 @@ app.get('/api/tracking/:code', (req, res) => {
     });
 });
 
+// POST /api/tracking/:code/customer - Save customer details to tracking code (public)
+app.post('/api/tracking/:code/customer', (req, res) => {
+    const { fullName, phoneNumber, email, streetAddress, city, region, postalCode, country } = req.body;
+    
+    // Update tracking code with customer details
+    const sql = `UPDATE tracking_codes SET 
+                 customerFullName = ?, customerPhone = ?, customerEmail = ?,
+                 customerAddress = ?, customerCity = ?, customerRegion = ?, 
+                 customerPostalCode = ?, customerCountry = ?
+                 WHERE trackingCode = ?`;
+    
+    const params = [fullName, phoneNumber, email, streetAddress, city, region, postalCode, country, req.params.code];
+    
+    db.run(sql, params, function(err) {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        if (this.changes === 0) {
+            res.status(404).json({ "error": "Tracking code not found" });
+            return;
+        }
+        res.json({ "message": "Customer details saved successfully", "changes": this.changes });
+    });
+});
+
 // GET /api/tracking - Get all tracking codes (admin only)
 app.get('/api/tracking', authenticateToken, (req, res) => {
     const sql = "SELECT * FROM tracking_codes ORDER BY createdAt DESC";
@@ -422,7 +458,7 @@ app.get('/api/tracking', authenticateToken, (req, res) => {
 
 // PATCH /api/tracking/:id/location - Update tracking location (admin only)
 app.patch('/api/tracking/:id/location', authenticateToken, (req, res) => {
-    const { currentLocation, currentStatus, estimatedDelivery } = req.body;
+    const { currentLocation, currentStatus, daysToDelivery } = req.body;
     
     let sql = "UPDATE tracking_codes SET ";
     const params = [];
@@ -435,9 +471,9 @@ app.patch('/api/tracking/:id/location', authenticateToken, (req, res) => {
         sql += "currentStatus = ?, ";
         params.push(currentStatus);
     }
-    if (estimatedDelivery) {
-        sql += "estimatedDelivery = ?, ";
-        params.push(estimatedDelivery);
+    if (daysToDelivery !== undefined) {
+        sql += "daysToDelivery = ?, ";
+        params.push(daysToDelivery);
     }
     
     // Remove trailing comma and space
