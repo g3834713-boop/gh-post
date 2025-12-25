@@ -414,7 +414,51 @@ app.get('/api/tracking/:code', (req, res) => {
             res.status(404).json({ "error": "Tracking code not found" });
             return;
         }
-        res.json({ "message": "success", "data": row });
+
+        // Compute progress statelessly based on createdAt and daysToDelivery
+        const routeSql = "SELECT * FROM route_locations ORDER BY routeOrder ASC";
+        db.all(routeSql, [], (rErr, routes) => {
+            if (rErr) {
+                // still return the raw row if route lookup fails
+                return res.json({ "message": "success", "data": row });
+            }
+
+            try {
+                const daysToDelivery = row.daysToDelivery || 60;
+                const createdAt = row.createdAt ? new Date(row.createdAt) : new Date();
+                const now = new Date();
+                const elapsedMs = Math.max(0, now.getTime() - createdAt.getTime());
+                const elapsedDays = Math.floor(elapsedMs / (24 * 60 * 60 * 1000));
+                const computedDaysRemaining = Math.max(0, daysToDelivery - elapsedDays);
+
+                const n = routes.length || 1;
+                const fraction = daysToDelivery > 0 ? (elapsedDays / daysToDelivery) : 1;
+                let computedIndex = Math.min(n - 1, Math.floor(fraction * (n - 1)));
+                if (computedIndex < 0) computedIndex = 0;
+
+                // determine stored index for currentLocation
+                let storedIndex = 0;
+                if (row.currentLocation) {
+                    const si = routes.findIndex(r => r.location === row.currentLocation);
+                    storedIndex = si >= 0 ? si : 0;
+                }
+
+                // prefer whichever is further along (admin may have manually advanced)
+                const chosenIndex = Math.max(storedIndex, computedIndex);
+                const computedLocation = routes[chosenIndex] ? routes[chosenIndex].location : row.currentLocation;
+
+                const out = Object.assign({}, row, {
+                    computedDaysRemaining,
+                    computedIndex: chosenIndex,
+                    computedLocation,
+                });
+
+                res.json({ "message": "success", "data": out });
+            } catch (e) {
+                // fallback to raw row on error
+                res.json({ "message": "success", "data": row });
+            }
+        });
     });
 });
 

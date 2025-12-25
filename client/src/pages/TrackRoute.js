@@ -17,19 +17,33 @@ function TrackRoute({ formData }) {
         if (trackRes.ok) {
           const trackJson = await trackRes.json();
           setTrackingData(trackJson.data);
-          
-          // Calculate days remaining
-          if (trackJson.data.daysToDelivery) {
+
+          // Use computedDaysRemaining from server if present, otherwise fallback to stored daysToDelivery
+          if (typeof trackJson.data.computedDaysRemaining === 'number') {
+            setDaysRemaining(trackJson.data.computedDaysRemaining);
+          } else if (typeof trackJson.data.daysToDelivery === 'number') {
             setDaysRemaining(trackJson.data.daysToDelivery);
           }
         }
 
-        // Fetch route locations
-        const routeRes = await fetch(`${process.env.REACT_APP_API_URL}/api/tracking/routes`);
-        if (routeRes.ok) {
-          const routeJson = await routeRes.json();
-          setRouteLocations(routeJson.data || []);
-        }
+  const getCurrentLocationIndex = () => {
+    if (!trackingData || !routeLocations.length) return 0;
+
+    const storedIdx = routeLocations.findIndex(r => r.location === trackingData.currentLocation);
+    const storedIndex = storedIdx >= 0 ? storedIdx : 0;
+
+    let computedIndex = null;
+    if (typeof trackingData.computedIndex === 'number') {
+      computedIndex = trackingData.computedIndex;
+    } else if (trackingData.computedLocation) {
+      const ci = routeLocations.findIndex(r => r.location === trackingData.computedLocation);
+      computedIndex = ci >= 0 ? ci : null;
+    }
+
+    const compIdx = (computedIndex !== null && computedIndex !== undefined) ? computedIndex : 0;
+
+    return Math.max(storedIndex, compIdx);
+  };
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
