@@ -31,7 +31,7 @@ function DeliveryStatus({ formData, setFormData }) {
 
   const handleTrack = async (overrideNumber) => {
     setError('');
-    const num = (overrideNumber || trackingNumber || '').trim();
+    const num = (overrideNumber !== undefined ? overrideNumber : trackingNumber || '').toString().trim();
     if (!num) {
       setError('Please enter a tracking number');
       return;
