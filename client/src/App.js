@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import DeliveryStatus from './pages/DeliveryStatus';
 import AddressForm from './pages/AddressForm';
 import TrackRoute from './pages/TrackRoute';
-import PaymentForm from './pages/PaymentForm';
 import SuccessPage from './pages/SuccessPage';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
@@ -51,7 +50,6 @@ function App() {
           <Route path="/" element={<DeliveryStatus formData={formData} setFormData={setFormData} />} />
           <Route path="/address" element={<AddressForm formData={formData} setFormData={setFormData} />} />
           <Route path="/track-route" element={<TrackRoute formData={formData} />} />
-          <Route path="/payment" element={<PaymentForm formData={formData} />} />
           <Route path="/success" element={<SuccessPage />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/services" element={<Services />} />
