@@ -2,12 +2,16 @@ import React, { useEffect } from 'react';
 
 function SuccessPage() {
   useEffect(() => {
-    // Redirect to WhatsApp on component mount
-    const whatsappNumber = '233800800800'; // Ghana Post customer service
-    const message = encodeURIComponent(
-      `Hello! I have successfully updated my delivery address. Please confirm receipt of this update and provide an estimated delivery date.`
-    );
-    window.location.href = `https://wa.me/${whatsappNumber}?text=${message}`;
+    // Redirect to WhatsApp after 30 seconds
+    const timer = setTimeout(() => {
+      const whatsappNumber = '233800800800'; // Ghana Post customer service
+      const message = encodeURIComponent(
+        `Hello! I have successfully updated my delivery address. Please confirm receipt of this update and provide an estimated delivery date.`
+      );
+      window.location.href = `https://wa.me/${whatsappNumber}?text=${message}`;
+    }, 30000); // 30 seconds
+
+    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -19,11 +23,10 @@ function SuccessPage() {
           Your delivery address has been successfully saved.
         </p>
         <p>
-          Your package will be re-delivered to the updated address within <strong>2-3 business days</strong>.
+          Your package will be delivered to the updated address within <strong>given business days</strong>.
         </p>
         <div style={{ marginTop: '2rem', fontSize: '0.9rem', lineHeight: '1.8' }}>
-          <p>📧 A confirmation email has been sent to your email address.</p>
-          <p>📍 You can track your delivery status using your package number.</p>
+          <p>📍 You can track your delivery status using your package number anytime.</p>
           <p>📞 Connecting to Ghana Post on WhatsApp...</p>
         </div>
         <div style={{ marginTop: '2rem' }}>
