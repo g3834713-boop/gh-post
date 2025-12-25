@@ -20,7 +20,8 @@ function AdminDashboard({ token }) {
   // Tracking form states
   const [trackingForm, setTrackingForm] = useState({
     description: '',
-    location: ''
+    location: '',
+    daysToDelivery: 60
   });
   const [selectedTrackingCode, setSelectedTrackingCode] = useState(null);
   const [showTrackingModal, setShowTrackingModal] = useState(false);
@@ -149,14 +150,15 @@ function AdminDashboard({ token }) {
         },
         body: JSON.stringify({
           description: trackingForm.description,
-          location: trackingForm.location || routeLocations[0]?.location
+          location: trackingForm.location || routeLocations[0]?.location,
+          daysToDelivery: parseInt(trackingForm.daysToDelivery) || 60
         })
       });
 
       if (response.ok) {
         const result = await response.json();
         setTrackingCodes([...trackingCodes, result.data]);
-        setTrackingForm({ description: '', location: '' });
+        setTrackingForm({ description: '', location: '', daysToDelivery: 60 });
         setTrackingMessage('✓ Tracking code generated successfully!');
         setTimeout(() => setTrackingMessage(''), 3000);
       } else {
@@ -474,6 +476,17 @@ function AdminDashboard({ token }) {
               </select>
             </div>
 
+            <div className="form-group">
+              <label>Days to Delivery (default: 60)</label>
+              <input
+                type="number"
+                value={trackingForm.daysToDelivery}
+                onChange={(e) => setTrackingForm({ ...trackingForm, daysToDelivery: e.target.value })}
+                placeholder="60"
+                min="1"
+              />
+            </div>
+
             <button
               onClick={handleGenerateTrackingCode}
               style={{
@@ -525,7 +538,7 @@ function AdminDashboard({ token }) {
                       <p><strong>Description:</strong> {code.description || 'N/A'}</p>
                       <p><strong>Current Location:</strong> {code.currentLocation}</p>
                       <p><strong>Status:</strong> {code.currentStatus}</p>
-                      <p><strong>Est. Delivery:</strong> {code.estimatedDelivery || 'Not set'}</p>
+                      <p><strong>Days to Delivery:</strong> {code.daysToDelivery || 60}</p>
                     </div>
                   </div>
                 ))}
