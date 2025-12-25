@@ -86,12 +86,12 @@ function DeliveryStatus({ formData, setFormData }) {
 
   // Auto-search when formData.packageNumber exists (site open/current code)
   useEffect(() => {
-    if (formData && formData.packageNumber && !hasSearched && !isLoading) {
+    if (formData?.packageNumber && typeof formData.packageNumber === 'string' && !hasSearched && !isLoading) {
       setTrackingNumber(formData.packageNumber);
       handleTrack(formData.packageNumber);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.packageNumber]);
+  }, [formData?.packageNumber]);
 
   const getCurrentLocationIndex = () => {
     if (!trackingData) return 0;

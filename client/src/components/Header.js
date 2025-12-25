@@ -1,14 +1,6 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 
 const Header = ({ formData }) => {
-  const navigate = useNavigate();
-
-  const goToDelivery = () => {
-    // navigate to delivery status page; DeliveryStatus will use formData.packageNumber if present
-    navigate('/');
-  };
-
   return (
     <div className="top-header">
       <div className="top-header-left">
@@ -21,18 +13,6 @@ const Header = ({ formData }) => {
         </p>
       </div>
       <div className="top-header-right">
-        <button 
-          onClick={goToDelivery} 
-          className="header-btn"
-          title={formData?.packageNumber ? `Tracking: ${formData.packageNumber}` : 'Check your delivery status'}
-        >
-          🚚 Delivery Status
-          {formData?.packageNumber && (
-            <span style={{ marginLeft: '0.5rem', fontSize: '0.9rem', opacity: 0.8 }}>
-              ({formData.packageNumber})
-            </span>
-          )}
-        </button>
         <a href="tel:+233xxx">📞 +233 (0) XXX XXX XXX</a>
         <a href="https://wa.me/233xxx">💬 WhatsApp</a>
       </div>
