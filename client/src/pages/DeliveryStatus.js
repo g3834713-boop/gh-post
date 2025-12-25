@@ -31,13 +31,18 @@ function DeliveryStatus({ formData, setFormData }) {
 
   const handleTrack = async (overrideNumber) => {
     setError('');
-    const num = (overrideNumber !== undefined ? overrideNumber : trackingNumber || '').toString().trim();
+    // Convert to string, trim, and ensure uppercase
+    let num = (overrideNumber !== undefined ? overrideNumber : trackingNumber || '').toString().trim().toUpperCase();
+    
+    console.log('Tracking input:', num); // Debug
+    
     if (!num) {
       setError('Please enter a tracking number');
       return;
     }
     if (!trackingRegex.test(num)) {
-      setError('Invalid format. Use GH-PKG-YYYY-XXXXXX');
+      setError(`Invalid format. Use GH-PKG-YYYY-XXXXXX (got: ${num})`);
+      console.log('Regex test failed for:', num, 'against pattern:', trackingRegex);
       return;
     }
 
@@ -72,7 +77,7 @@ function DeliveryStatus({ formData, setFormData }) {
       setHasSearched(true);
     } catch (err) {
       clearInterval(progressInterval);
-      console.error(err);
+      console.error('API Error:', err);
       setError('Error fetching tracking data');
       setIsLoading(false);
       setLoadingProgress(0);
