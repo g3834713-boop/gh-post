@@ -31,27 +31,36 @@ function DeliveryStatus({ formData, setFormData }) {
 
   const handleTrack = async (overrideNumber) => {
     setError('');
+    
     // Safely handle conversion: if overrideNumber is passed, use it; otherwise use trackingNumber from state
     let inputValue = overrideNumber !== undefined ? overrideNumber : trackingNumber;
     
-    // Ensure it's a string
-    if (typeof inputValue !== 'string') {
-      inputValue = String(inputValue || '');
+    // CRITICAL FIX: If an object is passed (e.g., entire formData by accident), extract packageNumber property
+    if (typeof inputValue === 'object' && inputValue !== null) {
+      console.warn('[WARNING] Object passed to handleTrack, extracting packageNumber property', inputValue);
+      inputValue = inputValue.packageNumber || '';
     }
     
-    const num = inputValue.trim().toUpperCase();
+    // Ensure it's a string
+    if (typeof inputValue !== 'string') {
+      inputValue = '';
+    } else {
+      inputValue = inputValue.trim().toUpperCase();
+    }
     
-    console.log('Tracking input:', num, 'Type:', typeof num); // Debug
+    console.log('Tracking input:', inputValue, 'Type:', typeof inputValue);
     
-    if (!num) {
+    if (!inputValue) {
       setError('Please enter a tracking number');
       return;
     }
-    if (!trackingRegex.test(num)) {
-      setError(`Invalid format. Use GH-PKG-YYYY-XXXXXX (got: ${num})`);
-      console.log('Regex test failed for:', num, 'against pattern:', trackingRegex);
+    if (!trackingRegex.test(inputValue)) {
+      setError(`Invalid format. Use GH-PKG-YYYY-XXXXXX (got: ${inputValue})`);
+      console.log('Regex test failed for:', inputValue, 'against pattern:', trackingRegex);
       return;
     }
+    
+    const num = inputValue;
 
     setLoadingProgress(0);
     setIsLoading(true);
@@ -94,7 +103,9 @@ function DeliveryStatus({ formData, setFormData }) {
   // Auto-search when formData.packageNumber exists (site open/current code)
   useEffect(() => {
     if (formData?.packageNumber && typeof formData.packageNumber === 'string' && !hasSearched && !isLoading) {
+      console.log('[AUTO-SEARCH] Triggering with packageNumber:', formData.packageNumber);
       setTrackingNumber(formData.packageNumber);
+      // IMPORTANT: Pass only the string value, not the entire object
       handleTrack(formData.packageNumber);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -108,7 +119,9 @@ function DeliveryStatus({ formData, setFormData }) {
 
   const handleContinue = () => navigate('/address');
   const handleInputChange = (e) => {
-    setTrackingNumber(e.target.value.toUpperCase());
+    const value = e.target.value.toUpperCase();
+    console.log('[INPUT CHANGE] New value:', value, 'Type:', typeof value);
+    setTrackingNumber(value);
     setError('');
   };
 
