@@ -29,6 +29,30 @@ function DeliveryStatus({ formData, setFormData }) {
     fetchRoutes();
   }, []);
 
+  // Reset page state when user navigates to track new package (fresh start)
+  useEffect(() => {
+    // Clear all search results and form data to start fresh
+    setTrackingNumber('');
+    setHasSearched(false);
+    setError('');
+    setIsLoading(false);
+    setLoadingProgress(0);
+    setTrackingData(null);
+    // Reset formData to clear any previous tracking
+    setFormData(prev => ({ 
+      ...prev, 
+      packageNumber: '',
+      fullName: '',
+      phoneNumber: '',
+      email: '',
+      streetAddress: '',
+      city: '',
+      region: '',
+      postalCode: '',
+      country: 'Ghana'
+    }));
+  }, [setFormData]);
+
   const handleTrack = async (overrideNumber) => {
     setError('');
     
@@ -66,15 +90,16 @@ function DeliveryStatus({ formData, setFormData }) {
     setIsLoading(true);
 
     // Simulate loading for better UX (while API request is in flight)
+    // Takes ~3-4 seconds to reach 90%
     const progressInterval = setInterval(() => {
       setLoadingProgress(prev => {
         if (prev >= 90) {
           clearInterval(progressInterval);
           return 90;
         }
-        return prev + Math.random() * 30;
+        return prev + Math.random() * 8;
       });
-    }, 300);
+    }, 100);
 
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/tracking/${num}`);
