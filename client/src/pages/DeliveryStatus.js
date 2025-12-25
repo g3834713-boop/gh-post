@@ -91,6 +91,7 @@ function DeliveryStatus({ formData, setFormData }) {
       setTrackingData(json.data);
       setFormData(prev => ({ ...prev, packageNumber: num }));
       setHasSearched(true);
+      setIsLoading(false);
     } catch (err) {
       clearInterval(progressInterval);
       console.error('API Error:', err);
