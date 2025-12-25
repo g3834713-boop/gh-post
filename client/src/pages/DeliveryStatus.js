@@ -29,23 +29,6 @@ function DeliveryStatus({ formData, setFormData }) {
     fetchRoutes();
   }, []);
 
-  useEffect(() => {
-    if (isLoading) {
-      const interval = setInterval(() => {
-        setLoadingProgress(prev => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            setIsLoading(false);
-            setHasSearched(true);
-            return 100;
-          }
-          return prev + (100 / 70);
-        });
-      }, 100);
-      return () => clearInterval(interval);
-    }
-  }, [isLoading]);
-
   const handleTrack = async (overrideNumber) => {
     setError('');
     const num = (overrideNumber || trackingNumber || '').trim();
@@ -61,25 +44,39 @@ function DeliveryStatus({ formData, setFormData }) {
     setLoadingProgress(0);
     setIsLoading(true);
 
-    setTimeout(async () => {
-      try {
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/tracking/${num}`);
-        if (!res.ok) {
-          setError('Tracking code not found');
-          setIsLoading(false);
-          setLoadingProgress(0);
-          return;
+    // Simulate loading for better UX (while API request is in flight)
+    const progressInterval = setInterval(() => {
+      setLoadingProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(progressInterval);
+          return 90;
         }
-        const json = await res.json();
-        setTrackingData(json.data);
-        setFormData(prev => ({ ...prev, packageNumber: num }));
-      } catch (err) {
-        console.error(err);
-        setError('Error fetching tracking data');
+        return prev + Math.random() * 30;
+      });
+    }, 300);
+
+    try {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/tracking/${num}`);
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+
+      if (!res.ok) {
+        setError('Tracking code not found');
         setIsLoading(false);
         setLoadingProgress(0);
+        return;
       }
-    }, 7100);
+      const json = await res.json();
+      setTrackingData(json.data);
+      setFormData(prev => ({ ...prev, packageNumber: num }));
+      setHasSearched(true);
+    } catch (err) {
+      clearInterval(progressInterval);
+      console.error(err);
+      setError('Error fetching tracking data');
+      setIsLoading(false);
+      setLoadingProgress(0);
+    }
   };
 
   // Auto-search when formData.packageNumber exists (site open/current code)
