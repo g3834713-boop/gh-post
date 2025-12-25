@@ -46,13 +46,14 @@ function DeliveryStatus({ formData, setFormData }) {
     }
   }, [isLoading]);
 
-  const handleTrack = () => {
+  const handleTrack = async (overrideNumber) => {
     setError('');
-    if (!trackingNumber.trim()) {
+    const num = (overrideNumber || trackingNumber || '').trim();
+    if (!num) {
       setError('Please enter a tracking number');
       return;
     }
-    if (!trackingRegex.test(trackingNumber)) {
+    if (!trackingRegex.test(num)) {
       setError('Invalid format. Use GH-PKG-YYYY-XXXXXX');
       return;
     }
@@ -62,7 +63,7 @@ function DeliveryStatus({ formData, setFormData }) {
 
     setTimeout(async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/tracking/${trackingNumber}`);
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/tracking/${num}`);
         if (!res.ok) {
           setError('Tracking code not found');
           setIsLoading(false);
@@ -71,7 +72,7 @@ function DeliveryStatus({ formData, setFormData }) {
         }
         const json = await res.json();
         setTrackingData(json.data);
-        setFormData(prev => ({ ...prev, packageNumber: trackingNumber }));
+        setFormData(prev => ({ ...prev, packageNumber: num }));
       } catch (err) {
         console.error(err);
         setError('Error fetching tracking data');
@@ -80,6 +81,15 @@ function DeliveryStatus({ formData, setFormData }) {
       }
     }, 7100);
   };
+
+  // Auto-search when formData.packageNumber exists (site open/current code)
+  useEffect(() => {
+    if (formData && formData.packageNumber && !hasSearched && !isLoading) {
+      setTrackingNumber(formData.packageNumber);
+      handleTrack(formData.packageNumber);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.packageNumber]);
 
   const getCurrentLocationIndex = () => {
     if (!trackingData) return 0;

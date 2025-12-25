@@ -42,7 +42,7 @@ function App() {
 
   return (
     <Router>
-      <Header />
+      <Header formData={formData} setFormData={setFormData} />
       <Navbar adminToken={adminToken} onLogout={handleLogout} />
       <main style={{ flex: 1 }}>
         <Routes>
