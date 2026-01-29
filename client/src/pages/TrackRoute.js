@@ -26,24 +26,6 @@ function TrackRoute({ formData }) {
           }
         }
 
-  const getCurrentLocationIndex = () => {
-    if (!trackingData || !routeLocations.length) return 0;
-
-    const storedIdx = routeLocations.findIndex(r => r.location === trackingData.currentLocation);
-    const storedIndex = storedIdx >= 0 ? storedIdx : 0;
-
-    let computedIndex = null;
-    if (typeof trackingData.computedIndex === 'number') {
-      computedIndex = trackingData.computedIndex;
-    } else if (trackingData.computedLocation) {
-      const ci = routeLocations.findIndex(r => r.location === trackingData.computedLocation);
-      computedIndex = ci >= 0 ? ci : null;
-    }
-
-    const compIdx = (computedIndex !== null && computedIndex !== undefined) ? computedIndex : 0;
-
-    return Math.max(storedIndex, compIdx);
-  };
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -56,8 +38,25 @@ function TrackRoute({ formData }) {
 
   const getCurrentLocationIndex = () => {
     if (!trackingData || !routeLocations.length) return 0;
-    const idx = routeLocations.findIndex(r => r.location === trackingData.currentLocation);
-    return idx >= 0 ? idx : 0;
+    
+    // PRIORITY: Use admin-set currentLocation (user-facing truth)
+    // If admin explicitly set a location, use it as the current progress
+    if (trackingData.currentLocation) {
+      const adminIdx = routeLocations.findIndex(r => r.location === trackingData.currentLocation);
+      if (adminIdx >= 0) {
+        return adminIdx;
+      }
+    }
+    
+    // Fallback: If no admin location or it's not in route, use computed location
+    if (typeof trackingData.computedIndex === 'number') {
+      return trackingData.computedIndex;
+    } else if (trackingData.computedLocation) {
+      const compIdx = routeLocations.findIndex(r => r.location === trackingData.computedLocation);
+      return compIdx >= 0 ? compIdx : 0;
+    }
+    
+    return 0;
   };
 
   const handleContinue = () => {

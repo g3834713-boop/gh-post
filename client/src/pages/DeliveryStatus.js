@@ -139,8 +139,25 @@ function DeliveryStatus({ formData, setFormData }) {
 
   const getCurrentLocationIndex = () => {
     if (!trackingData) return 0;
-    const idx = routeLocations.findIndex(r => r.location === trackingData.currentLocation);
-    return idx >= 0 ? idx : 0;
+    
+    // PRIORITY: Use admin-set currentLocation (user-facing truth)
+    // If admin explicitly set a location, use it as the current progress
+    if (trackingData.currentLocation) {
+      const adminIdx = routeLocations.findIndex(r => r.location === trackingData.currentLocation);
+      if (adminIdx >= 0) {
+        return adminIdx;
+      }
+    }
+    
+    // Fallback: If no admin location or it's not in route, use computed location
+    if (typeof trackingData.computedIndex === 'number') {
+      return trackingData.computedIndex;
+    } else if (trackingData.computedLocation) {
+      const compIdx = routeLocations.findIndex(r => r.location === trackingData.computedLocation);
+      return compIdx >= 0 ? compIdx : 0;
+    }
+    
+    return 0;
   };
 
   const handleContinue = () => navigate('/address');
