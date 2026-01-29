@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { api, format } from '../utils/api';
 
 function AdminDashboard({ token }) {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('submissions');
   const [submissions, setSubmissions] = useState([]);
   const [filteredSubmissions, setFilteredSubmissions] = useState([]);
@@ -31,7 +29,8 @@ function AdminDashboard({ token }) {
   useEffect(() => {
     loadSubmissions();
     loadTrackingData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   const loadSubmissions = async () => {
     setLoading(true);

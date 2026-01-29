@@ -170,7 +170,7 @@ export const validate = {
 
   // Validate phone number (basic)
   phone: (phone) => {
-    const regex = /^[\d\s\-\+\(\)]{10,}$/;
+    const regex = /^[\d\s\-+()]{10,}$/;
     return regex.test(phone);
   },
 

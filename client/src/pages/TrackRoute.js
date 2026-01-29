@@ -5,9 +5,24 @@ import StepIndicator from '../components/StepIndicator';
 function TrackRoute({ formData }) {
   const navigate = useNavigate();
   const [trackingData, setTrackingData] = useState(null);
-  const [routeLocations, setRouteLocations] = useState([]);
+  const [routeLocations, setRouteLocations] = useState(null);
   const [loading, setLoading] = useState(true);
   const [daysRemaining, setDaysRemaining] = useState(null);
+
+  useEffect(() => {
+    const fetchRoutes = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tracking/routes`);
+        if (response.ok) {
+          const result = await response.json();
+          setRouteLocations(result.data || []);
+        }
+      } catch (err) {
+        console.error('Failed to load routes', err);
+      }
+    };
+    fetchRoutes();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
