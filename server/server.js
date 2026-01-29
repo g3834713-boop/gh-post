@@ -373,16 +373,18 @@ app.get('/api/tracking/routes', (req, res) => {
 
 // POST /api/tracking/generate - Generate new tracking code (admin only)
 app.post('/api/tracking/generate', authenticateToken, (req, res) => {
-    const { description, daysToDelivery } = req.body;
+    const { description, daysToDelivery, location } = req.body;
     
     // Generate unique tracking code: GH-PKG-YYYY-XXXXXX
     const year = new Date().getFullYear();
     const randomNum = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
     const trackingCode = `GH-PKG-${year}-${randomNum}`;
     
+    // Use provided location if present, otherwise fallback to previous default
+    const startingLocation = location || 'Shenzhen, China';
     const sql = `INSERT INTO tracking_codes (trackingCode, currentLocation, currentStatus, daysToDelivery, description)
                  VALUES (?, ?, ?, ?, ?)`;
-    const params = [trackingCode, 'Shenzhen, China', 'Order Placed', daysToDelivery || 60, description || ''];
+    const params = [trackingCode, startingLocation, 'Order Placed', daysToDelivery || 60, description || ''];
     
     db.run(sql, params, function(err) {
         if (err) {
@@ -394,7 +396,7 @@ app.post('/api/tracking/generate', authenticateToken, (req, res) => {
             "data": {
                 id: this.lastID,
                 trackingCode,
-                currentLocation: 'Shenzhen, China',
+                currentLocation: startingLocation,
                 currentStatus: 'Order Placed',
                 daysToDelivery: daysToDelivery || 60
             }
