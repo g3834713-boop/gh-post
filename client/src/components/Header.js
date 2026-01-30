@@ -9,7 +9,7 @@ const Header = ({ formData }) => {
           Accra Central, Ghana, GA-183-8164
         </p>
         <p>
-          <strong>Email:</strong> info@ghanapost.com.gh
+          <strong>Email:</strong> info@ghpostoff.com.gh
         </p>
       </div>
       <div className="top-header-right">

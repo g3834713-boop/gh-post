@@ -111,7 +111,7 @@ const AboutUs = () => {
               <br />Accra Central, Ghana, GA-183-8164
             </p>
             <p>
-              <a href="mailto:info@ghanapost.com.gh">info@ghanapost.com.gh</a>
+              <a href="mailto:info@ghpostoff.com.gh">info@ghpostoff.com.gh</a>
             </p>
             <p>
               <a href="tel:+233302668138">+233 (0)302 668 138</a>

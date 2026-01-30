@@ -103,8 +103,8 @@ const ContactUs = () => {
           <div className="info-section">
             <h3>✉️ Email</h3>
             <p>
-              <a href="mailto:info@ghanapost.com.gh">info@ghanapost.com.gh</a><br/>
-              <a href="mailto:support@ghanapost.com.gh">support@ghanapost.com.gh</a>
+              <a href="mailto:info@ghpostoff.com.gh">info@ghpostoff.com.gh</a><br/>
+              <a href="mailto:support@ghpostoff.com.gh">support@ghpostoff.com.gh</a>
             </p>
           </div>
 
