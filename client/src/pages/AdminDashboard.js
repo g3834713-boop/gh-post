@@ -183,7 +183,7 @@ function AdminDashboard({ token }) {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          location: trackingForm.location
+          currentLocation: trackingForm.location
         })
       });
 

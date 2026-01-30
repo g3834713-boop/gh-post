@@ -187,6 +187,10 @@ function DeliveryStatus({ formData, setFormData }) {
 
   if (hasSearched && trackingData) {
     const currentLocationIndex = getCurrentLocationIndex();
+
+    const currentLocationDescription = (routeLocations && routeLocations[currentLocationIndex] && routeLocations[currentLocationIndex].description)
+      ? routeLocations[currentLocationIndex].description
+      : (trackingData.currentStatus || trackingData.description || 'Order Placed');
     return (
       <div className="container">
         <StepIndicator currentStep={1} />
@@ -234,8 +238,8 @@ function DeliveryStatus({ formData, setFormData }) {
             <div className="alert-content">
               <h2>Current Location</h2>
               <p>{trackingData.currentLocation}</p>
-              <p className="status-text">{trackingData.currentStatus}</p>
-              {trackingData.description && (
+              <p className="status-text">{currentLocationDescription}</p>
+              {trackingData.description && trackingData.description !== currentLocationDescription && (
                 <p style={{ marginTop: '0.5rem', fontStyle: 'italic', color: '#777' }}>
                   {trackingData.description}
                 </p>

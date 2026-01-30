@@ -110,6 +110,11 @@ function TrackRoute({ formData }) {
 
   const currentIndex = getCurrentLocationIndex();
 
+  // Determine the description/status for the current route location
+  const currentLocationDescription = (routeLocations && routeLocations[currentIndex] && routeLocations[currentIndex].description)
+    ? routeLocations[currentIndex].description
+    : (trackingData.currentStatus || trackingData.description || 'Order Placed');
+
   return (
     <div className="container">
       <StepIndicator currentStep={2} />
@@ -145,8 +150,8 @@ function TrackRoute({ formData }) {
           <div className="alert-content">
             <h2>Current Location</h2>
             <p style={{ fontSize: '1.1rem', fontWeight: '600' }}>{trackingData.currentLocation}</p>
-            <p style={{ marginTop: '0.5rem', color: '#666' }}>{trackingData.currentStatus}</p>
-            {trackingData.description && (
+            <p style={{ marginTop: '0.5rem', color: '#666' }}>{currentLocationDescription}</p>
+            {trackingData.description && trackingData.description !== currentLocationDescription && (
               <p style={{ marginTop: '0.5rem', fontStyle: 'italic', color: '#777' }}>
                 {trackingData.description}
               </p>
