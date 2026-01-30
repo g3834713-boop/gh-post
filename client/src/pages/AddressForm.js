@@ -62,11 +62,17 @@ function AddressForm({ formData, setFormData }) {
       });
 
       if (response.ok) {
-        navigate('/track-route');
+        console.log('Customer details saved successfully, navigating to track-route');
+        // Add small delay to ensure data is persisted before navigation
+        setTimeout(() => {
+          navigate('/track-route');
+        }, 500);
       } else {
-        setErrors({ submit: 'Failed to save address. Please try again.' });
+        const errorData = await response.json();
+        setErrors({ submit: errorData.error || 'Failed to save address. Please try again.' });
       }
     } catch (error) {
+      console.error('Error saving customer details:', error);
       setErrors({ submit: 'Error: ' + error.message });
     } finally {
       setLoading(false);
@@ -76,6 +82,20 @@ function AddressForm({ formData, setFormData }) {
   const handleBack = () => {
     navigate('/');
   };
+
+  // Show loading state while saving
+  if (loading) {
+    return (
+      <div className="container">
+        <StepIndicator currentStep={2} />
+        <div className="form-section" style={{ textAlign: 'center', padding: '3rem' }}>
+          <div className="spinner" style={{ margin: '0 auto', marginBottom: '1rem' }}></div>
+          <h3>Saving your delivery address...</h3>
+          <p style={{ color: '#666' }}>Please wait, we're updating your package information.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container">

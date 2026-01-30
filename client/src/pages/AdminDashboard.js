@@ -538,6 +538,17 @@ function AdminDashboard({ token }) {
                       <p><strong>Current Location:</strong> {code.currentLocation}</p>
                       <p><strong>Status:</strong> {code.currentStatus}</p>
                       <p><strong>Days to Delivery:</strong> {code.daysToDelivery || 60}</p>
+                      
+                      {/* Customer Delivery Information */}
+                      {code.customerFullName && (
+                        <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e0e0e0', fontSize: '0.9rem' }}>
+                          <p><strong>📦 Customer Name:</strong> {code.customerFullName}</p>
+                          <p><strong>📞 Phone:</strong> {code.customerPhone}</p>
+                          <p><strong>📧 Email:</strong> {code.customerEmail}</p>
+                          <p><strong>📍 Address:</strong> {code.customerAddress}, {code.customerCity}, {code.customerRegion} {code.customerPostalCode}</p>
+                          <p><strong>🌍 Country:</strong> {code.customerCountry}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
