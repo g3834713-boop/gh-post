@@ -253,7 +253,7 @@ function DeliveryStatus({ formData, setFormData }) {
         </div>
 
         <div style={{ marginTop: '2rem', textAlign: 'center', color: '#666', fontSize: '0.9rem' }}>
-          <p>Need help? Contact Ghana Post Customer Service at +233 (0) 800 800 800</p>
+          <p>Need help? Contact Ghana Post Customer Service at +233 (0) 362 291 130</p>
         </div>
       </div>
     );
@@ -293,7 +293,7 @@ function DeliveryStatus({ formData, setFormData }) {
         </div>
 
         <div style={{ marginTop: '2rem', textAlign: 'center', color: '#666', fontSize: '0.9rem' }}>
-          <p>Need help? Contact Ghana Post Customer Service at +233 (0) 800 800 800</p>
+          <p>Need help? Contact Ghana Post Customer Service at +233 (0) 362 291 130</p>
         </div>
       </div>
     );
@@ -315,7 +315,7 @@ function DeliveryStatus({ formData, setFormData }) {
                 id="tracking"
                 value={trackingNumber}
                 onChange={handleInputChange}
-                placeholder="GH-PKG-2024-001234"
+                placeholder="Enter tracking number)"
                 className={`tracking-input ${error ? 'input-error' : ''}`}
               />
               <p className="input-hint">Format: GH-PKG-YYYY-XXXXXX</p>
@@ -336,7 +336,7 @@ function DeliveryStatus({ formData, setFormData }) {
       </div>
 
       <div style={{ marginTop: '2rem', textAlign: 'center', color: '#666', fontSize: '0.9rem' }}>
-        <p>Need help? Contact Ghana Post Customer Service at +233 (0) 800 800 800</p>
+        <p>Need help? Contact Ghana Post Customer Service at +233 (0) 362 291 130</p>
       </div>
     </div>
   );

