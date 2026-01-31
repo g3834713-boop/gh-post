@@ -96,22 +96,21 @@ function DeliveryStatus({ formData, setFormData }) {
     setLoadingProgress(0);
     setIsLoading(true);
 
-    // Simulate loading for better UX (while API request is in flight)
-    // Takes ~3-4 seconds to reach 90%
+    // Simulate loading for better UX (10 second total load time)
+    // Animates progress bar to 90% over 10 seconds
     const progressInterval = setInterval(() => {
       setLoadingProgress(prev => {
         if (prev >= 90) {
           clearInterval(progressInterval);
           return 90;
         }
-        return prev + Math.random() * 8;
+        return prev + Math.random() * 3;
       });
     }, 100);
 
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/tracking/${num}`);
       clearInterval(progressInterval);
-      setLoadingProgress(100);
 
       if (!res.ok) {
         setError('Tracking code not found');
@@ -120,10 +119,15 @@ function DeliveryStatus({ formData, setFormData }) {
         return;
       }
       const json = await res.json();
-      setTrackingData(json.data);
-      setFormData(prev => ({ ...prev, packageNumber: num }));
-      setHasSearched(true);
-      setIsLoading(false);
+      
+      // Add 10 second delay before showing results
+      setTimeout(() => {
+        setLoadingProgress(100);
+        setTrackingData(json.data);
+        setFormData(prev => ({ ...prev, packageNumber: num }));
+        setHasSearched(true);
+        setIsLoading(false);
+      }, 10000); // 10 seconds
     } catch (err) {
       clearInterval(progressInterval);
       console.error('API Error:', err);
