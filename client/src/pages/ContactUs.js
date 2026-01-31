@@ -96,8 +96,8 @@ const ContactUs = () => {
 
           <div className="info-section">
             <h3>📞 Phone</h3>
-            <p>+233 (0) 302 665 700<br/>
-               +233 (0) 302 665 701</p>
+            <p>+233 (0) 362 291 130<br/>
+               +233 (0) 362 291 130</p>
           </div>
 
           <div className="info-section">

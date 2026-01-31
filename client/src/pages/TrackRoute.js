@@ -219,7 +219,7 @@ function TrackRoute({ formData }) {
       </div>
 
       <div style={{ marginTop: '2rem', textAlign: 'center', color: '#666', fontSize: '0.9rem' }}>
-        <p>Need help? Contact Ghana Post Customer Service at +233 (0) 800 800 800</p>
+        <p>Need help? Contact Ghana Post Customer Service at +233 (0) 362 291 130</p>
       </div>
     </div>
   );

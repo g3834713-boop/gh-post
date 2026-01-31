@@ -114,7 +114,7 @@ const AboutUs = () => {
               <a href="mailto:info@ghpostoff.com.gh">info@ghpostoff.com.gh</a>
             </p>
             <p>
-              <a href="tel:+233302668138">+233 (0)302 668 138</a>
+              <a href="tel:+233362291130">+233 (0)362 291 130</a>
             </p>
           </div>
 

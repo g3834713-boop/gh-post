@@ -143,7 +143,7 @@ function AddressForm({ formData, setFormData }) {
                 name="phoneNumber"
                 value={formData.phoneNumber}
                 onChange={handleInputChange}
-                placeholder="+233 XXX XXX XXX"
+                placeholder="+233 362 291 130"
                 disabled={loading}
               />
               {errors.phoneNumber && <div className="error-message">{errors.phoneNumber}</div>}

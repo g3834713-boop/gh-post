@@ -177,7 +177,7 @@ const TermsAndConditions = () => {
           </p>
           <ul>
             <li><strong>Email:</strong> <a href="mailto:info@ghpostoff.com.gh">info@ghpostoff.com.gh</a></li>
-            <li><strong>Phone:</strong> <a href="tel:+233302668138">+233 (0)302 668 138</a></li>
+            <li><strong>Phone:</strong> <a href="tel:+233362291130">+233 (0)362 291 130</a></li>
             <li><strong>Address:</strong> G.P.O. Asafoatse Nettey Road, Accra Central, Ghana, GA-183-8164</li>
           </ul>
 
