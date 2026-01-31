@@ -74,7 +74,7 @@ const initializeDatabase = async () => {
                 trackingCode TEXT UNIQUE NOT NULL,
                 createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                 currentLocation TEXT DEFAULT 'China - Processing',
-                currentStatus TEXT DEFAULT 'Order Placed',
+                currentStatus TEXT DEFAULT 'Order Successful',
                 estimatedDelivery DATE,
                 daysToDelivery INTEGER DEFAULT 60,
                 description TEXT,
@@ -401,7 +401,7 @@ app.post('/api/tracking/generate', authenticateToken, async (req, res) => {
     const startingLocation = location || 'Shenzhen, China';
     const sql = `INSERT INTO tracking_codes (trackingCode, currentLocation, currentStatus, daysToDelivery, description)
                  VALUES ($1, $2, $3, $4, $5) RETURNING id`;
-    const params = [trackingCode, startingLocation, 'Order Placed', daysToDelivery || 60, description || ''];
+    const params = [trackingCode, startingLocation, 'Order Successful', daysToDelivery || 60, description || ''];
 
     try {
         const result = await pool.query(sql, params);
@@ -411,7 +411,7 @@ app.post('/api/tracking/generate', authenticateToken, async (req, res) => {
                 id: result.rows[0].id,
                 trackingCode,
                 currentLocation: startingLocation,
-                currentStatus: 'Order Placed',
+                currentStatus: 'Order Successful',
                 daysToDelivery: daysToDelivery || 60
             }
         });
