@@ -204,13 +204,18 @@ function AdminDashboard({ token }) {
 
       if (response.ok) {
         const result = await response.json();
+        console.log('Location update response:', result.data);
+        
+        // Update the tracking codes list with the new data
         setTrackingCodes(trackingCodes.map(code =>
           code.id === selectedTrackingCode.id ? result.data : code
         ));
-        setSelectedTrackingCode(result.data);
-        setTrackingForm({ description: '', location: '' });
+        
         setTrackingMessage('✓ Location updated successfully!');
-        setTimeout(() => setTrackingMessage(''), 3000);
+        setTimeout(() => {
+          setTrackingMessage('');
+          closeTrackingModal();
+        }, 1500);
       } else {
         setTrackingMessage('Failed to update location');
       }
@@ -254,7 +259,8 @@ function AdminDashboard({ token }) {
 
   const openTrackingModal = (code) => {
     setSelectedTrackingCode(code);
-    setTrackingForm({ description: '', location: code.currentLocation });
+    const currentLoc = code.currentlocation || code.currentLocation || '';
+    setTrackingForm({ description: '', location: currentLoc });
     setShowTrackingModal(true);
   };
 
@@ -558,18 +564,18 @@ function AdminDashboard({ token }) {
                     </div>
                     <div className="tracking-code-info">
                       <p><strong>Description:</strong> {code.description || 'N/A'}</p>
-                      <p><strong>Current Location:</strong> {code.currentLocation}</p>
-                      <p><strong>Status:</strong> {code.currentStatus}</p>
-                      <p><strong>Days to Delivery:</strong> {code.daysToDelivery || 60}</p>
+                      <p><strong>Current Location:</strong> {code.currentlocation || code.currentLocation || 'Not set'}</p>
+                      <p><strong>Status:</strong> {code.currentstatus || code.currentStatus || 'N/A'}</p>
+                      <p><strong>Days to Delivery:</strong> {code.daystodelivery || code.daysToDelivery || 60}</p>
                       
                       {/* Customer Delivery Information */}
-                      {code.customerFullName && (
+                      {(code.customerfullname || code.customerFullName) && (
                         <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e0e0e0', fontSize: '0.9rem' }}>
-                          <p><strong>📦 Customer Name:</strong> {code.customerFullName}</p>
-                          <p><strong>📞 Phone:</strong> {code.customerPhone}</p>
-                          <p><strong>📧 Email:</strong> {code.customerEmail}</p>
-                          <p><strong>📍 Address:</strong> {code.customerAddress}, {code.customerCity}, {code.customerRegion} {code.customerPostalCode}</p>
-                          <p><strong>🌍 Country:</strong> {code.customerCountry}</p>
+                          <p><strong>📦 Customer Name:</strong> {code.customerfullname || code.customerFullName}</p>
+                          <p><strong>📞 Phone:</strong> {code.customerphone || code.customerPhone}</p>
+                          <p><strong>📧 Email:</strong> {code.customeremail || code.customerEmail}</p>
+                          <p><strong>📍 Address:</strong> {code.customeraddress || code.customerAddress}, {code.customercity || code.customerCity}, {code.customerregion || code.customerRegion} {code.customerpostalcode || code.customerPostalCode}</p>
+                          <p><strong>🌍 Country:</strong> {code.customercountry || code.customerCountry}</p>
                         </div>
                       )}
                     </div>
