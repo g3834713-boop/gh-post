@@ -13,7 +13,7 @@ const Header = ({ formData }) => {
         </p>
       </div>
       <div className="top-header-right">
-        <a href="tel:+233xxx">📞 +233 (0) XXX XXX XXX</a>
+        <a href="tel:+233xxx">📞 +233 (0) 362 291 130</a>
         <a href="https://wa.me/233xxx">💬 WhatsApp</a>
       </div>
     </div>
