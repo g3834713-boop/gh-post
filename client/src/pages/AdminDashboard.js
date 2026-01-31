@@ -32,6 +32,17 @@ function AdminDashboard({ token }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
+  // Reload routes if empty (fallback)
+  useEffect(() => {
+    if (routeLocations.length === 0) {
+      const timer = setTimeout(() => {
+        console.log('Routes empty, reloading...');
+        loadTrackingData();
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [routeLocations]);
+
   const loadSubmissions = async () => {
     setLoading(true);
     try {
@@ -63,7 +74,10 @@ function AdminDashboard({ token }) {
       
       if (routesRes.ok) {
         const routesData = await routesRes.json();
+        console.log('Routes loaded:', routesData.data);
         setRouteLocations(routesData.data || []);
+      } else {
+        console.error('Failed to load routes:', routesRes.status);
       }
     } catch (err) {
       console.error('Failed to load tracking data:', err);
@@ -467,12 +481,20 @@ function AdminDashboard({ token }) {
               <select
                 value={trackingForm.location}
                 onChange={(e) => setTrackingForm({ ...trackingForm, location: e.target.value })}
+                disabled={routeLocations.length === 0}
               >
-                <option value="">Select a location</option>
-                {routeLocations.map(loc => (
+                <option value="">
+                  {routeLocations.length === 0 ? 'No locations available (loading...)' : 'Select a location'}
+                </option>
+                {routeLocations && routeLocations.length > 0 && routeLocations.map(loc => (
                   <option key={loc.id} value={loc.location}>{loc.location}</option>
                 ))}
               </select>
+              {routeLocations.length === 0 && (
+                <p style={{ color: '#d32f2f', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+                  ⚠️ Routes not loaded. Refreshing...
+                </p>
+              )}
             </div>
 
             <div className="form-group">
