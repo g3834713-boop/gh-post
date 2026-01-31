@@ -544,7 +544,7 @@ function AdminDashboard({ token }) {
                 {trackingCodes.map(code => (
                   <div key={code.id} className="tracking-code-card">
                     <div className="tracking-code-header">
-                      <div className="tracking-code-number">{code.trackingCode}</div>
+                      <div className="tracking-code-number">{code.trackingcode || code.trackingCode}</div>
                       <button
                         onClick={() => openTrackingModal(code)}
                         style={{

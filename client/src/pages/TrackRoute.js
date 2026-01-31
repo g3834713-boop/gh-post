@@ -122,8 +122,8 @@ function TrackRoute({ formData }) {
       <div className="status-card">
         <div className="status-header">
           <div className="status-number">Your Package Tracking Number</div>
-          <div className="package-number">{trackingData.trackingCode}</div>
-          <div className="status-badge">📍 {trackingData.currentStatus}</div>
+          <div className="package-number">{trackingData.trackingcode || trackingData.trackingCode}</div>
+          <div className="status-badge">📍 {trackingData.currentstatus || trackingData.currentStatus}</div>
         </div>
 
         {/* Days Remaining Counter */}
