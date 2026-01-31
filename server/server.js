@@ -1,6 +1,6 @@
 
 const express = require('express');
-const { Pool } = require('pg');
+const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
@@ -17,23 +17,54 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key-for-jwt-toke
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ghanapost2024';
 
-// Database setup for PostgreSQL
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+// Database setup for SQLite
+const db = new sqlite3.Database('./submissions.db', (err) => {
+    if (err) {
+        console.error('Error opening database:', err.message);
+    } else {
+        console.log('Connected to SQLite database.');
+    }
 });
 
-console.log('Connecting to PostgreSQL database...');
+// Wrapper for db.run to return promise
+const dbRun = (sql, params = []) => {
+    return new Promise((resolve, reject) => {
+        db.run(sql, params, function(err) {
+            if (err) reject(err);
+            else resolve(this);
+        });
+    });
+};
+
+// Wrapper for db.all to return promise
+const dbAll = (sql, params = []) => {
+    return new Promise((resolve, reject) => {
+        db.all(sql, params, (err, rows) => {
+            if (err) reject(err);
+            else resolve(rows);
+        });
+    });
+};
+
+// Wrapper for db.get to return promise
+const dbGet = (sql, params = []) => {
+    return new Promise((resolve, reject) => {
+        db.get(sql, params, (err, row) => {
+            if (err) reject(err);
+            else resolve(row);
+        });
+    });
+};
 
 // Function to initialize database tables
 const initializeDatabase = async () => {
     try {
         // Create submissions table
-        await pool.query(`
+        await dbRun(`
             CREATE TABLE IF NOT EXISTS submissions (
-                id SERIAL PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 packageNumber TEXT,
-                timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                 fullName TEXT,
                 phoneNumber TEXT,
                 email TEXT,
@@ -53,10 +84,10 @@ const initializeDatabase = async () => {
         `);
 
         // Create contacts table
-        await pool.query(`
+        await dbRun(`
             CREATE TABLE IF NOT EXISTS contacts (
-                id SERIAL PRIMARY KEY,
-                timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                 name TEXT,
                 email TEXT,
                 phone TEXT,
@@ -68,11 +99,11 @@ const initializeDatabase = async () => {
         `);
 
         // Create tracking codes table
-        await pool.query(`
+        await dbRun(`
             CREATE TABLE IF NOT EXISTS tracking_codes (
-                id SERIAL PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 trackingCode TEXT UNIQUE NOT NULL,
-                createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
                 currentLocation TEXT DEFAULT 'China - Processing',
                 currentStatus TEXT DEFAULT 'Order Placed',
                 estimatedDelivery DATE,
@@ -91,10 +122,10 @@ const initializeDatabase = async () => {
         `);
 
         // Create tracking route locations table
-        await pool.query(`
+        await dbRun(`
             CREATE TABLE IF NOT EXISTS route_locations (
-                id SERIAL PRIMARY KEY,
-                routeOrder INTEGER,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                routeorder INTEGER,
                 location TEXT UNIQUE,
                 country TEXT,
                 description TEXT
@@ -114,9 +145,10 @@ const initializeDatabase = async () => {
             { order: 9, location: 'Local Delivery Station', country: 'Ghana', desc: 'Ready for Delivery' }
         ];
 
-        const insertQuery = 'INSERT INTO route_locations (routeOrder, location, country, description) VALUES ($1, $2, $3, $4) ON CONFLICT (location) DO NOTHING';
+        const insertQuery = 'INSERT INTO route_locations (routeorder, location, country, description) VALUES ($1, $2, $3, $4) ON CONFLICT (location) DO NOTHING';
         for (const loc of defaultLocations) {
             await pool.query(insertQuery, [loc.order, loc.location, loc.country, loc.desc]);
+            console.log(`Inserted location: ${loc.location}`);
         }
 
         console.log('Database tables are ready.');
@@ -378,12 +410,13 @@ app.get('/api/submissions/export/csv', authenticateToken, async (req, res) => {
 
 // GET /api/tracking/routes - Get all available route locations
 app.get('/api/tracking/routes', async (req, res) => {
-    const sql = "SELECT * FROM route_locations ORDER BY \"routeOrder\" ASC";
+    const sql = "SELECT * FROM route_locations ORDER BY routeorder ASC";
     try {
         const result = await pool.query(sql);
+        console.log('Routes query result:', result.rows);
         res.json({ "message": "success", "data": result.rows });
     } catch (err) {
-        console.error(err);
+        console.error('Error fetching routes:', err);
         res.status(400).json({ "error": err.message });
     }
 });
@@ -430,7 +463,7 @@ app.get('/api/tracking/:code', async (req, res) => {
             return res.status(404).json({ "error": "Tracking code not found" });
         }
 
-        const routeSql = 'SELECT * FROM route_locations ORDER BY "routeOrder" ASC';
+        const routeSql = 'SELECT * FROM route_locations ORDER BY routeorder ASC';
         const routesResult = await pool.query(routeSql);
         const routes = routesResult.rows;
 
