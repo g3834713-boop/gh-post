@@ -453,12 +453,20 @@ app.get('/api/tracking/:code', async (req, res) => {
             if (row.currentlocation) {
                 const si = routes.findIndex(r => r.location === row.currentlocation);
                 storedIndex = si >= 0 ? si : 0;
+                console.log(`Admin set location: "${row.currentlocation}", found at index: ${storedIndex}`);
             }
 
             const chosenIndex = Math.max(storedIndex, computedIndex);
             const computedLocation = routes[chosenIndex] ? routes[chosenIndex].location : row.currentlocation;
 
-            const out = { ...row, computedDaysRemaining, computedIndex, computedLocation };
+            console.log(`Returning - currentLocation: ${row.currentlocation}, computedIndex: ${computedIndex}, storedIndex: ${storedIndex}, chosenIndex: ${chosenIndex}`);
+
+            const out = { 
+                ...row, 
+                computedDaysRemaining, 
+                computedIndex: storedIndex >= 0 ? storedIndex : computedIndex,
+                computedLocation: row.currentlocation || computedLocation 
+            };
             res.json({ "message": "success", "data": out });
 
         } catch (e) {
@@ -512,6 +520,8 @@ app.get('/api/tracking', authenticateToken, async (req, res) => {
 app.patch('/api/tracking/:id/location', authenticateToken, async (req, res) => {
     const { currentLocation, currentStatus, daysToDelivery } = req.body;
     
+    console.log(`Updating tracking ID ${req.params.id} with location: "${currentLocation}"`);
+    
     let updates = [];
     let params = [];
     let paramIndex = 1;
@@ -534,11 +544,17 @@ app.patch('/api/tracking/:id/location', authenticateToken, async (req, res) => {
     }
 
     params.push(req.params.id);
-    const sql = `UPDATE tracking_codes SET ${updates.join(', ')} WHERE id = $${paramIndex}`;
+    const sql = `UPDATE tracking_codes SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING *`;
 
     try {
         const result = await pool.query(sql, params);
-        res.json({ "message": "Tracking updated successfully", "changes": result.rowCount });
+        console.log(`Updated ${result.rowCount} rows`);
+        
+        if (result.rowCount > 0) {
+            res.json({ "message": "Tracking updated successfully", "data": result.rows[0] });
+        } else {
+            res.status(404).json({ "error": "Tracking code not found" });
+        }
     } catch (err) {
         console.error(err);
         res.status(400).json({ "error": err.message });
