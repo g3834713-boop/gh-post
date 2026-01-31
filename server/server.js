@@ -29,11 +29,11 @@ console.log('Connecting to PostgreSQL database...');
 const initializeDatabase = async () => {
     try {
         // Create submissions table
-        await dbRun(`
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS submissions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 packageNumber TEXT,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                 fullName TEXT,
                 phoneNumber TEXT,
                 email TEXT,
@@ -53,10 +53,10 @@ const initializeDatabase = async () => {
         `);
 
         // Create contacts table
-        await dbRun(`
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS contacts (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                id SERIAL PRIMARY KEY,
+                timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                 name TEXT,
                 email TEXT,
                 phone TEXT,
@@ -68,11 +68,11 @@ const initializeDatabase = async () => {
         `);
 
         // Create tracking codes table
-        await dbRun(`
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS tracking_codes (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 trackingCode TEXT UNIQUE NOT NULL,
-                createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                 currentLocation TEXT DEFAULT 'China - Processing',
                 currentStatus TEXT DEFAULT 'Order Placed',
                 estimatedDelivery DATE,
@@ -91,9 +91,9 @@ const initializeDatabase = async () => {
         `);
 
         // Create tracking route locations table
-        await dbRun(`
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS route_locations (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 routeorder INTEGER,
                 location TEXT UNIQUE,
                 country TEXT,
