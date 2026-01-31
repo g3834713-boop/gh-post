@@ -2,16 +2,7 @@ import React, { useEffect } from 'react';
 
 function SuccessPage() {
   useEffect(() => {
-    // Redirect to WhatsApp after 30 seconds
-    const timer = setTimeout(() => {
-      const whatsappNumber = '233800800800'; // Ghana Post customer service
-      const message = encodeURIComponent(
-        `Hello! I have successfully updated my delivery address. Please confirm receipt of this update and provide an estimated delivery date.`
-      );
-      window.location.href = `https://wa.me/${whatsappNumber}?text=${message}`;
-    }, 30000); // 30 seconds
-
-    return () => clearTimeout(timer);
+    // No automatic redirect - user stays on success page
   }, []);
 
   return (
@@ -27,10 +18,10 @@ function SuccessPage() {
         </p>
         <div style={{ marginTop: '2rem', fontSize: '0.9rem', lineHeight: '1.8' }}>
           <p>📍 You can track your delivery status using your package number anytime.</p>
-          <p>📞 Connecting to Ghana Post on WhatsApp...</p>
+          <p>📞 Need help? Contact Ghana Post Customer Service</p>
         </div>
         <div style={{ marginTop: '2rem' }}>
-          <p style={{ color: '#999', fontSize: '0.9rem' }}>If you are not redirected, please message us at +233 800 800 800</p>
+          <p style={{ color: '#999', fontSize: '0.9rem' }}>Message us at +233 800 800 800 on WhatsApp if you have any questions</p>
         </div>
       </div>
     </div>
