@@ -31,11 +31,12 @@ function DeliveryStatus({ formData, setFormData }) {
 
   // Initialize from formData if a package number already exists (persist tracking code)
   useEffect(() => {
-    if (formData?.packageNumber) {
+    if (formData?.packageNumber && !trackingNumber) {
       setTrackingNumber(formData.packageNumber);
       console.log('[INIT] Loaded persistent tracking number:', formData.packageNumber);
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData?.packageNumber]);
 
   // Handle clearing on explicit user action, but NOT on component mount
   const clearTracking = () => {
