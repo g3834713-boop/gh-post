@@ -29,16 +29,22 @@ function DeliveryStatus({ formData, setFormData }) {
     fetchRoutes();
   }, []);
 
-  // Reset page state when user navigates to track new package (fresh start)
+  // Initialize from formData if a package number already exists (persist tracking code)
   useEffect(() => {
-    // Clear all search results and form data to start fresh
+    if (formData?.packageNumber) {
+      setTrackingNumber(formData.packageNumber);
+      console.log('[INIT] Loaded persistent tracking number:', formData.packageNumber);
+    }
+  }, []);
+
+  // Handle clearing on explicit user action, but NOT on component mount
+  const clearTracking = () => {
     setTrackingNumber('');
     setHasSearched(false);
     setError('');
     setIsLoading(false);
     setLoadingProgress(0);
     setTrackingData(null);
-    // Reset formData to clear any previous tracking
     setFormData(prev => ({ 
       ...prev, 
       packageNumber: '',
@@ -51,7 +57,7 @@ function DeliveryStatus({ formData, setFormData }) {
       postalCode: '',
       country: 'Ghana'
     }));
-  }, [setFormData]);
+  };
 
   const handleTrack = async (overrideNumber) => {
     setError('');
@@ -247,8 +253,17 @@ function DeliveryStatus({ formData, setFormData }) {
             </div>
           </div>
 
-          <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-            <button onClick={handleContinue} className="btn btn-primary btn-lg btn-block">Continue →</button>
+          <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+            <button 
+              onClick={() => clearTracking()} 
+              className="btn btn-secondary btn-lg"
+              style={{ flex: 1, maxWidth: '200px' }}
+            >
+              ↻ Track New
+            </button>
+            <button onClick={handleContinue} className="btn btn-primary btn-lg" style={{ flex: 1, maxWidth: '200px' }}>
+              Continue →
+            </button>
           </div>
         </div>
 
