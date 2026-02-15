@@ -19,7 +19,7 @@ function AdminLogin({ setAdminToken }) {
       if (response.accessToken) {
         setAdminToken(response.accessToken);
         localStorage.setItem('adminToken', response.accessToken);
-        navigate('/admin');
+        navigate('/unruly-business');
       }
     } catch (err) {
       setError('Invalid username or password');

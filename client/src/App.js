@@ -59,12 +59,12 @@ function App() {
 
           {/* Admin Routes */}
           <Route 
-            path="/admin/login" 
-            element={adminToken ? <Navigate to="/admin" /> : <AdminLogin setAdminToken={setAdminToken} />} 
+            path="/unruly-business/login" 
+            element={adminToken ? <Navigate to="/unruly-business" /> : <AdminLogin setAdminToken={setAdminToken} />} 
           />
           <Route 
-            path="/admin" 
-            element={adminToken ? <AdminDashboard token={adminToken} /> : <Navigate to="/admin/login" />} 
+            path="/unruly-business" 
+            element={adminToken ? <AdminDashboard token={adminToken} /> : <Navigate to="/unruly-business/login" />} 
           />
 
           {/* Catch-all */}

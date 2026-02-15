@@ -25,7 +25,7 @@ export const api = {
   // Admin login
   adminLogin: async (username, password) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
+      const response = await fetch(`${API_BASE_URL}/api/unruly-business/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -22,7 +22,7 @@ function Navbar({ adminToken, onLogout }) {
         <Link to="/contact" style={{ color: 'white', textDecoration: 'none' }}>Contact</Link>
         {adminToken ? (
           <>
-            <Link to="/admin" style={{ color: 'white', textDecoration: 'none', fontWeight: '600' }}>
+            <Link to="/unruly-business" style={{ color: 'white', textDecoration: 'none', fontWeight: '600' }}>
               Dashboard
             </Link>
             <button onClick={handleLogout} className="admin-logout">

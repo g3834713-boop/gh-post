@@ -257,8 +257,8 @@ app.patch('/api/submissions/:id/status', authenticateToken, async (req, res) => 
 });
 
 
-// POST /api/admin/login - Admin authentication
-app.post('/api/admin/login', (req, res) => {
+// POST /api/unruly-business/login - Admin authentication
+app.post('/api/unruly-business/login', (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
