@@ -14,7 +14,7 @@ function Navbar({ adminToken, onLogout }) {
       <Link to="/" className="navbar-brand" style={{ textDecoration: 'none', color: 'white' }}>
         <span className="navbar-brand-text">Ghana Post</span>
       </Link>
-      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
         <Link to="/" style={{ color: 'white', textDecoration: 'none', fontWeight: '600' }}>🚚 Track New Package</Link>
         <Link to="/about" style={{ color: 'white', textDecoration: 'none' }}>About</Link>
         <Link to="/services" style={{ color: 'white', textDecoration: 'none' }}>Services</Link>
